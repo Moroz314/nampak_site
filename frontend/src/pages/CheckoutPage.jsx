@@ -10,49 +10,49 @@ import {
 } from '../store/cartSlice'
 
 /* ── Inline SVG Icons ─────────────────────────────────────────────────────── */
-const TruckIcon = ({ className = "w-5 h-5" }) => (
+const TruckIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.8} stroke="currentColor" className={className}>
+    strokeWidth={1.8} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.25V3.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75M8.25 21h8.25" />
   </svg>
 )
 
-const WarehouseIcon = ({ className = "w-5 h-5" }) => (
+const WarehouseIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.8} stroke="currentColor" className={className}>
+    strokeWidth={1.8} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.25A2.25 2.25 0 0 1 0 18.75V7.5a2.25 2.25 0 0 1 1.096-1.936l9.75-5.625a2.25 2.25 0 0 1 2.308 0l9.75 5.625A2.25 2.25 0 0 1 24 7.5v11.25A2.25 2.25 0 0 1 21.75 21H13.5Z" />
   </svg>
 )
 
-const CalcIcon = ({ className = "w-5 h-5" }) => (
+const CalcIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.8} stroke="currentColor" className={className}>
+    strokeWidth={1.8} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm0 3h.008v.008H8.25v-.008Zm3-6h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm0 3h.008v.008H11.25v-.008Zm3-6h.008v.008H14.25v-.008Zm0 3h.008v.008H14.25v-.008ZM4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.5h7.5" />
   </svg>
 )
 
-const CheckCircleIcon = ({ className = "w-5 h-5" }) => (
+const CheckCircleIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={2} stroke="currentColor" className={className}>
+    strokeWidth={2} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
   </svg>
 )
 
-const InvoiceIcon = ({ className = "w-5 h-5" }) => (
+const InvoiceIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.8} stroke="currentColor" className={className}>
+    strokeWidth={1.8} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
   </svg>
 )
 
-const SbpIcon = ({ className = "w-5 h-5" }) => (
+const SbpIcon = ({ className = "w-4 h-4" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.8} stroke="currentColor" className={className}>
+    strokeWidth={1.8} stroke="currentColor" className={`w-4 h-4 flex-shrink-0 ${className}`}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
   </svg>
@@ -80,6 +80,7 @@ export default function CheckoutPage() {
   const [agreed, setAgreed]   = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg]     = useState('')
+  const [showMobileSummary, setShowMobileSummary] = useState(false)
 
   const totalPositions = items.length
   const totalQuantity = useMemo(() => {
@@ -207,13 +208,63 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Мобильная сводка заказа (видна только на экранах < lg) */}
+            <div className="lg:hidden mb-6 bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setShowMobileSummary(prev => !prev)}
+                className="w-full flex items-center justify-between gap-3 text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#FAF5EF] text-[#C59B6D] flex items-center justify-center text-base flex-shrink-0 font-bold border border-[#E8D8C5]">
+                    📦
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[11px] text-slate-500 font-medium leading-none">
+                      Заявка: {totalPositions} {totalPositions === 1 ? 'позиция' : totalPositions < 5 ? 'позиции' : 'позиций'} ({totalQuantity} шт.)
+                    </div>
+                    <div className="font-heading font-black text-base text-[#162330] mt-0.5 leading-tight">
+                      {cartTotalFormatted}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#C59B6D] flex-shrink-0 bg-[#FAF5EF] px-2.5 py-1 rounded-lg border border-[#E8D8C5]">
+                  <span>{showMobileSummary ? 'Скрыть' : 'Состав'}</span>
+                  <span className={`text-[9px] transform transition-transform duration-200 ${showMobileSummary ? 'rotate-180' : ''}`}>▼</span>
+                </div>
+              </button>
+
+              {showMobileSummary && (
+                <div className="mt-3.5 pt-3 border-t border-slate-100 max-h-60 overflow-y-auto divide-y divide-slate-100 text-xs pr-1">
+                  {items.map((it) => (
+                    <div key={it.product_id} className="py-2.5 flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-[#162330] line-clamp-1">{it.name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {it.dimensions_mm && <span className="mr-1">{it.dimensions_mm}</span>}
+                          {it.material_specs && <span className="mr-1 font-semibold text-[#926435]">[{it.material_specs}]</span>}
+                          <span>× {it.quantity.toLocaleString('ru-RU')} шт.</span>
+                        </div>
+                      </div>
+                      <div className="font-heading font-bold text-[#162330] whitespace-nowrap ml-2">
+                        {Number(it.subtotal || 0).toLocaleString('ru-RU', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })} ₽
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               
               {/* ── ЛЕВАЯ КОЛОНКА (ФОРМА) ─────────────────────────── */}
               <div className="lg:col-span-7 space-y-6">
 
                 {/* БЛОК 1: Контактные данные заказчика */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs">
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 md:p-8 shadow-xs">
                   <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100">
                     <span className="w-6 h-6 rounded-full bg-[#162330] text-white text-xs font-bold flex items-center justify-center">
                       1
@@ -235,7 +286,7 @@ export default function CheckoutPage() {
                         value={form.name}
                         onChange={handleChange}
                         placeholder="Например: Иванов Иван Сергеевич"
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+                        className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
                       />
                     </div>
 
@@ -250,7 +301,7 @@ export default function CheckoutPage() {
                         value={form.company_name}
                         onChange={handleChange}
                         placeholder="ООО «Альфа» / ИП Смирнов или ИНН 7701234567"
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+                        className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
                       />
                     </div>
 
@@ -266,7 +317,7 @@ export default function CheckoutPage() {
                           value={form.phone}
                           onChange={handleChange}
                           placeholder="+7 (999) 000-00-00"
-                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+                          className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
                         />
                       </div>
 
@@ -281,7 +332,7 @@ export default function CheckoutPage() {
                           value={form.email}
                           onChange={handleChange}
                           placeholder="partner@company.ru"
-                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+                          className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -300,13 +351,13 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Карточки-переключатели delivery_type */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">
                     
                     {/* Вариант 1: Доставка ТК / курьером */}
                     <label
-                      className={`p-4 rounded-xl border-2 flex flex-col justify-between cursor-pointer transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 flex items-center sm:flex-col sm:items-start justify-between cursor-pointer transition-all ${
                         form.delivery_type === 'delivery'
-                          ? 'border-[#C59B6D] bg-[#FAF5EF]'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] shadow-xs ring-1 ring-[#C59B6D]/30'
                           : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -318,13 +369,29 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <div className="flex items-center justify-between mb-2">
-                        <TruckIcon className={form.delivery_type === 'delivery' ? 'text-[#C59B6D]' : 'text-slate-400'} />
-                        {form.delivery_type === 'delivery' && (
-                          <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
-                        )}
+                      <div className="flex items-center gap-3 sm:w-full sm:justify-between sm:mb-2.5">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                          form.delivery_type === 'delivery' ? 'bg-[#C59B6D]/15 text-[#C59B6D]' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <TruckIcon className="w-4 h-4" />
+                        </div>
+                        <div className="sm:hidden flex-1 min-w-0">
+                          <div className="font-heading font-bold text-xs text-[#162330]">
+                            Транспортная компания
+                          </div>
+                          <div className="text-[11px] text-slate-500 leading-tight">
+                            До терминала или адреса заказчика по РФ
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {form.delivery_type === 'delivery' ? (
+                            <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full border border-slate-300 sm:hidden" />
+                          )}
+                        </div>
                       </div>
-                      <div>
+                      <div className="hidden sm:block">
                         <div className="font-heading font-bold text-xs text-[#162330]">
                           Транспортная компания
                         </div>
@@ -336,9 +403,9 @@ export default function CheckoutPage() {
 
                     {/* Вариант 2: Самовывоз */}
                     <label
-                      className={`p-4 rounded-xl border-2 flex flex-col justify-between cursor-pointer transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 flex items-center sm:flex-col sm:items-start justify-between cursor-pointer transition-all ${
                         form.delivery_type === 'pickup'
-                          ? 'border-[#C59B6D] bg-[#FAF5EF]'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] shadow-xs ring-1 ring-[#C59B6D]/30'
                           : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -350,13 +417,29 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <div className="flex items-center justify-between mb-2">
-                        <WarehouseIcon className={form.delivery_type === 'pickup' ? 'text-[#C59B6D]' : 'text-slate-400'} />
-                        {form.delivery_type === 'pickup' && (
-                          <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
-                        )}
+                      <div className="flex items-center gap-3 sm:w-full sm:justify-between sm:mb-2.5">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                          form.delivery_type === 'pickup' ? 'bg-[#C59B6D]/15 text-[#C59B6D]' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <WarehouseIcon className="w-4 h-4" />
+                        </div>
+                        <div className="sm:hidden flex-1 min-w-0">
+                          <div className="font-heading font-bold text-xs text-[#162330]">
+                            Самовывоз со склада
+                          </div>
+                          <div className="text-[11px] text-slate-500 leading-tight">
+                            Бесплатно со склада НАМПАК в СПб
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {form.delivery_type === 'pickup' ? (
+                            <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full border border-slate-300 sm:hidden" />
+                          )}
+                        </div>
                       </div>
-                      <div>
+                      <div className="hidden sm:block">
                         <div className="font-heading font-bold text-xs text-[#162330]">
                           Самовывоз со склада
                         </div>
@@ -368,9 +451,9 @@ export default function CheckoutPage() {
 
                     {/* Вариант 3: Индивидуальный расчет */}
                     <label
-                      className={`p-4 rounded-xl border-2 flex flex-col justify-between cursor-pointer transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 flex items-center sm:flex-col sm:items-start justify-between cursor-pointer transition-all ${
                         form.delivery_type === 'custom_calc'
-                          ? 'border-[#C59B6D] bg-[#FAF5EF]'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] shadow-xs ring-1 ring-[#C59B6D]/30'
                           : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -382,13 +465,29 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <div className="flex items-center justify-between mb-2">
-                        <CalcIcon className={form.delivery_type === 'custom_calc' ? 'text-[#C59B6D]' : 'text-slate-400'} />
-                        {form.delivery_type === 'custom_calc' && (
-                          <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
-                        )}
+                      <div className="flex items-center gap-3 sm:w-full sm:justify-between sm:mb-2.5">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                          form.delivery_type === 'custom_calc' ? 'bg-[#C59B6D]/15 text-[#C59B6D]' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <CalcIcon className="w-4 h-4" />
+                        </div>
+                        <div className="sm:hidden flex-1 min-w-0">
+                          <div className="font-heading font-bold text-xs text-[#162330]">
+                            Индивидуальный расчёт
+                          </div>
+                          <div className="text-[11px] text-slate-500 leading-tight">
+                            Подбор попутной машины или сборного груза
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {form.delivery_type === 'custom_calc' ? (
+                            <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full border border-slate-300 sm:hidden" />
+                          )}
+                        </div>
                       </div>
-                      <div>
+                      <div className="hidden sm:block">
                         <div className="font-heading font-bold text-xs text-[#162330]">
                           Индивидуальный расчёт
                         </div>
@@ -413,7 +512,7 @@ export default function CheckoutPage() {
                         value={form.address}
                         onChange={handleChange}
                         placeholder="Например: г. Санкт-Петербург, Лиговский пр-т, д. 50 или терминал Деловые Линии"
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+                        className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
                       />
                     </div>
                   )}
@@ -429,7 +528,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* БЛОК 3: Способ оплаты и комментарий */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs">
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 md:p-8 shadow-xs">
                   <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100">
                     <span className="w-6 h-6 rounded-full bg-[#162330] text-white text-xs font-bold flex items-center justify-center">
                       3
@@ -439,13 +538,13 @@ export default function CheckoutPage() {
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 mb-5">
                     
                     {/* Оплата по счёту */}
                     <label
-                      className={`p-4 rounded-xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 flex items-center sm:items-start gap-3 cursor-pointer transition-all ${
                         form.payment_method === 'invoice'
-                          ? 'border-[#C59B6D] bg-[#FAF5EF]'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] shadow-xs ring-1 ring-[#C59B6D]/30'
                           : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -457,22 +556,33 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <InvoiceIcon className={form.payment_method === 'invoice' ? 'text-[#C59B6D]' : 'text-slate-400'} />
-                      <div className="flex-1">
-                        <div className="font-heading font-bold text-xs text-[#162330]">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        form.payment_method === 'invoice' ? 'bg-[#C59B6D]/15 text-[#C59B6D]' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        <InvoiceIcon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-heading font-bold text-xs sm:text-sm text-[#162330]">
                           Безналичный расчёт по счёту
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          Для юридических лиц и ИП с предоставлением УПД
+                        <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                          Для юрлиц и ИП с предоставлением УПД
                         </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {form.payment_method === 'invoice' ? (
+                          <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border border-slate-300" />
+                        )}
                       </div>
                     </label>
 
                     {/* Оплата по реквизитам / СБП */}
                     <label
-                      className={`p-4 rounded-xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-xl border-2 flex items-center sm:items-start gap-3 cursor-pointer transition-all ${
                         form.payment_method === 'sbp'
-                          ? 'border-[#C59B6D] bg-[#FAF5EF]'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] shadow-xs ring-1 ring-[#C59B6D]/30'
                           : 'border-slate-200 hover:border-slate-300 bg-white'
                       }`}
                     >
@@ -484,14 +594,25 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         className="sr-only"
                       />
-                      <SbpIcon className={form.payment_method === 'sbp' ? 'text-[#C59B6D]' : 'text-slate-400'} />
-                      <div className="flex-1">
-                        <div className="font-heading font-bold text-xs text-[#162330]">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        form.payment_method === 'sbp' ? 'bg-[#C59B6D]/15 text-[#C59B6D]' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        <SbpIcon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-heading font-bold text-xs sm:text-sm text-[#162330]">
                           Реквизиты / QR-код СБП
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
+                        <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
                           Быстрая оплата после согласования с менеджером
                         </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {form.payment_method === 'sbp' ? (
+                          <CheckCircleIcon className="w-4 h-4 text-[#C59B6D]" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border border-slate-300" />
+                        )}
                       </div>
                     </label>
 
@@ -507,7 +628,7 @@ export default function CheckoutPage() {
                       value={form.comment}
                       onChange={handleChange}
                       placeholder="Укажите нужные точные размеры, требуемый тираж партии, необходимость нанесения логотипа или срочность отгрузки..."
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all resize-y"
+                      className="w-full px-4 py-3 sm:py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-[#162330] focus:bg-white focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all resize-y"
                     />
                   </div>
 

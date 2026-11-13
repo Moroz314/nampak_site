@@ -316,30 +316,32 @@ export default function Catalog() {
           <div className="lg:col-span-9 space-y-6">
 
             {/* Мобильная горизонтальная прокрутка категорий */}
-            <div className="lg:hidden flex gap-2 overflow-x-auto scrollbar-none pb-1">
+            <div className="lg:hidden -mx-4 px-4 sm:-mx-6 sm:px-6 flex gap-2 overflow-x-auto scrollbar-none pb-2 pt-0.5 touch-scroll-x">
               <button
                 type="button"
                 onClick={() => handleCategorySelect(null)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-semibold whitespace-nowrap border transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-heading font-semibold whitespace-nowrap border transition-all active:scale-95 shadow-2xs flex-shrink-0 ${
                   activeCategory === null
-                    ? 'bg-[#162330] text-white border-[#162330]'
-                    : 'bg-white border-slate-200 text-slate-700'
+                    ? 'bg-[#162330] text-white border-[#162330] shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                 }`}
               >
-                Все товары
+                <span>📦</span>
+                <span>Все товары</span>
               </button>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-heading font-semibold whitespace-nowrap border transition-all ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-heading font-semibold whitespace-nowrap border transition-all active:scale-95 shadow-2xs flex-shrink-0 ${
                     activeCategory === cat.id
-                      ? 'bg-[#162330] text-white border-[#162330]'
-                      : 'bg-white border-slate-200 text-slate-700'
+                      ? 'bg-[#162330] text-white border-[#162330] shadow-sm'
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                   }`}
                 >
-                  {cat.name}
+                  <span>{getCategoryIcon(cat.name)}</span>
+                  <span>{cat.name}</span>
                 </button>
               ))}
             </div>

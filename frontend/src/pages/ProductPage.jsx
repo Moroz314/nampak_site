@@ -291,7 +291,7 @@ export default function ProductPage() {
                     type="button"
                     onClick={() => handleQtyChange(-minQty)}
                     disabled={quantity <= minQty}
-                    className="w-9 h-9 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-base transition-colors disabled:opacity-40 cursor-pointer"
+                    className="w-10 h-10 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-lg transition-colors disabled:opacity-40 cursor-pointer active:scale-95"
                   >
                     −
                   </button>
@@ -301,12 +301,12 @@ export default function ProductPage() {
                     step={minQty > 100 ? 100 : 1}
                     value={quantity}
                     onChange={(e) => handleManualQty(e.target.value)}
-                    className="w-24 h-9 text-center font-heading font-bold text-sm text-[#162330] border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:border-[#C59B6D] outline-none"
+                    className="w-24 h-10 text-center font-heading font-bold text-base text-[#162330] border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:border-[#C59B6D] outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => handleQtyChange(minQty)}
-                    className="w-9 h-9 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-base transition-colors cursor-pointer"
+                    className="w-10 h-10 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-lg transition-colors cursor-pointer active:scale-95"
                   >
                     +
                   </button>
@@ -318,7 +318,7 @@ export default function ProductPage() {
                 <span className="text-xs text-slate-500 font-medium">
                   Сумма за партию ({quantity.toLocaleString('ru-RU')} шт.):
                 </span>
-                <span className="font-heading font-black text-2xl text-[#162330]">
+                <span className="font-heading font-black text-xl sm:text-2xl text-[#162330]">
                   {calculatedTotalFormatted}
                 </span>
               </div>
@@ -328,7 +328,7 @@ export default function ProductPage() {
                 type="button"
                 onClick={handleAdd}
                 disabled={isAdding}
-                className={`w-full py-4 px-6 rounded-xl font-heading font-bold text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
+                className={`w-full py-4 px-6 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 min-h-[48px] ${
                   added
                     ? 'bg-emerald-600 text-white'
                     : 'bg-gradient-to-r from-[#C59B6D] to-[#B08455] hover:from-[#B08455] hover:to-[#9A7244] text-white'
@@ -353,28 +353,28 @@ export default function ProductPage() {
               <p className="text-xs text-slate-700 leading-relaxed">
                 Изготовим упаковку с вашей фирменной символикой от 2 000 шт. или по индивидуальной раскладке до 5 дней. Напишите менеджеру для моментального расчёта:
               </p>
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 pt-1">
                 <a
                   href="https://t.me/namupak"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold shadow-xs"
+                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-xs"
                 >
                   <TgIcon />
-                  <span>Написать в Telegram</span>
+                  <span>Telegram</span>
                 </a>
                 <a
                   href="https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-xs"
+                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-xs"
                 >
                   <MaxIcon />
-                  <span>Написать в Max</span>
+                  <span>Max</span>
                 </a>
                 <a
                   href="tel:+79931176492"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-300 text-[#162330] rounded-lg text-xs font-semibold shadow-xs"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-slate-300 hover:border-[#C59B6D] text-[#162330] rounded-xl text-xs font-semibold shadow-xs"
                 >
                   <span>📞 +7 (993) 117-64-92</span>
                 </a>

@@ -97,11 +97,11 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* ── Контент ───────────────────────────────────────────── */}
-      <div className="flex flex-col flex-1 p-5 gap-3">
+      <div className="flex flex-col flex-1 p-4 sm:p-5 gap-2.5 sm:gap-3">
         
         {/* Категория */}
         {product.category && (
-          <span className="text-[11px] font-semibold text-[#926435] uppercase tracking-wider">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#926435] uppercase tracking-wider">
             {product.category.name}
           </span>
         )}
@@ -109,14 +109,14 @@ export default function ProductCard({ product }) {
         {/* Название товара */}
         <Link
           to={`/product/${product.slug}`}
-          className="font-heading font-bold text-[#162330] text-base leading-snug line-clamp-2
+          className="font-heading font-bold text-[#162330] text-sm sm:text-base leading-snug line-clamp-2
                      group-hover:text-[#C59B6D] transition-colors"
         >
           {product.name}
         </Link>
 
         {/* Упаковочные характеристики: размеры, марка, минимальный тираж */}
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
+        <div className="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-[11px] text-slate-600">
           {product.dimensions_mm && (
             <span className="bg-slate-100 px-2 py-0.5 rounded font-medium text-slate-700">
               {product.dimensions_mm}
@@ -142,9 +142,9 @@ export default function ProductCard({ product }) {
         )}
 
         {/* ── Нижняя строка: Цена + Кнопка ───────────────────── */}
-        <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t border-slate-100">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 pt-3 mt-auto border-t border-slate-100">
           <div>
-            <div className="font-heading font-extrabold text-xl text-[#162330]">
+            <div className="font-heading font-extrabold text-lg sm:text-xl text-[#162330]">
               {priceFormatted}
             </div>
             <div className="text-[10px] text-slate-400">
@@ -157,8 +157,8 @@ export default function ProductCard({ product }) {
             disabled={isAdding}
             aria-label={`Добавить «${product.name}» в корзину`}
             className={`
-              px-4 py-2.5 rounded-xl font-heading font-semibold text-xs tracking-wider uppercase
-              transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer
+              px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-heading font-semibold text-xs tracking-wider uppercase
+              transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer flex-shrink-0 min-h-[38px] sm:min-h-[42px]
               ${added
                 ? 'bg-emerald-600 text-white'
                 : 'bg-[#162330] hover:bg-[#1E2F40] text-white shadow-xs'
