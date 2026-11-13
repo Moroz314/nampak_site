@@ -62,8 +62,8 @@ export default function ProductPage() {
       .then(({ data }) => {
         if (active) {
           setProduct(data)
-          // По умолчанию подставляем min_order_qty
-          setQuantity(data.min_order_qty || 1)
+          // По умолчанию 1 штука
+          setQuantity(1)
         }
       })
       .catch(err => {
@@ -89,7 +89,7 @@ export default function ProductPage() {
   }) + ' ₽'
 
   const handleQtyChange = (delta) => {
-    const next = Math.max(minQty, quantity + delta)
+    const next = Math.max(1, quantity + delta)
     setQuantity(next)
   }
 
@@ -289,23 +289,23 @@ export default function ProductPage() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => handleQtyChange(-minQty)}
-                    disabled={quantity <= minQty}
+                    onClick={() => handleQtyChange(-1)}
+                    disabled={quantity <= 1}
                     className="w-10 h-10 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-lg transition-colors disabled:opacity-40 cursor-pointer active:scale-95"
                   >
                     −
                   </button>
                   <input
                     type="number"
-                    min={minQty}
-                    step={minQty > 100 ? 100 : 1}
+                    min={1}
+                    step={1}
                     value={quantity}
                     onChange={(e) => handleManualQty(e.target.value)}
                     className="w-24 h-10 text-center font-heading font-bold text-base text-[#162330] border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:border-[#C59B6D] outline-none"
                   />
                   <button
                     type="button"
-                    onClick={() => handleQtyChange(minQty)}
+                    onClick={() => handleQtyChange(1)}
                     className="w-10 h-10 rounded-xl border border-slate-300 text-slate-700 hover:border-[#C59B6D] hover:text-[#C59B6D] flex items-center justify-center font-bold text-lg transition-colors cursor-pointer active:scale-95"
                   >
                     +

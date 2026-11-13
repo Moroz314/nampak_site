@@ -51,7 +51,7 @@ export default function ProductCard({ product }) {
     e.preventDefault()
     e.stopPropagation()
     if (isAdding) return
-    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: minQty }))
+    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: 1 }))
     if (addToCart.fulfilled.match(result)) {
       setAdded(true)
       setTimeout(() => setAdded(false), 2000)
