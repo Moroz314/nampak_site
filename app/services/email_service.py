@@ -14,9 +14,17 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 PAYMENT_METHODS_MAP = {
+    "invoice": "Безналичный расчет по счету (для юрлиц / ИП)",
+    "card": "Банковская карта",
     "sbp": "СБП (Система быстрых платежей)",
+    "cash": "Оплата при получении / наличные",
     "bank_card": "Банковская карта",
-    "cash": "Оплата при получении",
+}
+
+DELIVERY_TYPES_MAP = {
+    "delivery": "Доставка по городу / ТК",
+    "pickup": "Самовывоз со склада",
+    "custom_calc": "Индивидуальный расчет логистики",
 }
 
 
@@ -35,6 +43,10 @@ def _build_html_email(order_data: dict[str, Any]) -> str:
     customer_email = html.escape(str(order_data.get("customer_email", "—") or "—"))
     delivery_address = html.escape(str(order_data.get("delivery_address", "—") or "Не указан"))
     comment = html.escape(str(order_data.get("comment", "") or "—"))
+
+    company_name = html.escape(str(order_data.get("company_name") or ""))
+    raw_delivery = order_data.get("delivery_type") or "delivery"
+    delivery_type_label = html.escape(DELIVERY_TYPES_MAP.get(raw_delivery, raw_delivery))
 
     pvz_code = html.escape(str(order_data.get("pvz_code") or ""))
     delivery_cost = float(order_data.get("delivery_cost") or 0.0)
@@ -65,36 +77,45 @@ def _build_html_email(order_data: dict[str, Any]) -> str:
 
     if delivery_cost > 0:
         items_rows_html += f"""
-        <tr style="border-bottom: 1px solid #E5E7EB; background-color: #FDFBF7;">
-            <td style="padding: 12px 14px; color: #C49A45; font-size: 13px; text-align: center;">📦</td>
-            <td style="padding: 12px 14px; color: #111827; font-size: 14px; font-weight: 500;">Доставка СДЭК (до ПВЗ {pvz_code})</td>
+        <tr style="border-bottom: 1px solid #E5E7EB; background-color: #F8FAFC;">
+            <td style="padding: 12px 14px; color: #0284C7; font-size: 13px; text-align: center;">📦</td>
+            <td style="padding: 12px 14px; color: #111827; font-size: 14px; font-weight: 500;">Доставка ({delivery_type_label})</td>
             <td style="padding: 12px 14px; color: #374151; font-size: 14px; text-align: right; white-space: nowrap;">{delivery_cost_formatted}</td>
             <td style="padding: 12px 14px; color: #374151; font-size: 14px; text-align: center;">1</td>
             <td style="padding: 12px 14px; color: #111827; font-size: 14px; font-weight: 600; text-align: right; white-space: nowrap;">{delivery_cost_formatted}</td>
         </tr>
         """
 
+    company_row = (
+        f"""<tr>
+            <td style="padding: 4px 0; color: #6B7280; width: 140px;">Организация / ИНН:</td>
+            <td style="padding: 4px 0; color: #111827; font-weight: 600;">{company_name}</td>
+        </tr>"""
+        if company_name
+        else ""
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Новый заказ #{order_id}</title>
+    <title>Заявка #{order_id} — НАМПАК</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #F3F4F6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F3F4F6; padding: 30px 10px;">
+<body style="margin: 0; padding: 0; background-color: #F1F5F9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F1F5F9; padding: 30px 10px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 640px; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E5E7EB;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 640px; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E2E8F0;">
                     
                     <!-- Шапка -->
                     <tr>
-                        <td style="background-color: #000000; padding: 28px 32px; text-align: center; border-bottom: 2px solid #C49A45;">
-                            <div style="font-size: 22px; font-weight: 700; letter-spacing: 0.15em; color: #F3F4F6; text-transform: uppercase;">
-                                МАСТЕРСКАЯ АЛДУИН
+                        <td style="background-color: #0F172A; padding: 28px 32px; text-align: center; border-bottom: 3px solid #0284C7;">
+                            <div style="font-size: 24px; font-weight: 800; letter-spacing: 0.12em; color: #FFFFFF; text-transform: uppercase;">
+                                НАМПАК
                             </div>
-                            <div style="font-size: 12px; color: #C49A45; letter-spacing: 0.25em; text-transform: uppercase; margin-top: 4px;">
-                                Уведомление о новом заказе
+                            <div style="font-size: 12px; color: #38BDF8; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px;">
+                                Упаковочные материалы оптом и в розницу
                             </div>
                         </td>
                     </tr>
@@ -102,64 +123,69 @@ def _build_html_email(order_data: dict[str, Any]) -> str:
                     <!-- Основное тело -->
                     <tr>
                         <td style="padding: 32px 32px 24px 32px;">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
-                                <h1 style="margin: 0; font-size: 20px; font-weight: 700; color: #111827;">
-                                    Заказ <span style="color: #C49A45;">#{order_id}</span>
+                            <div style="margin-bottom: 20px;">
+                                <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #0F172A;">
+                                    Заявка <span style="color: #0284C7;">#{order_id}</span>
                                 </h1>
+                                <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.5;">
+                                    Ваша заявка успешно принята в обработку. Менеджер <strong>НАМПАК</strong> свяжется с вами для согласования объема, способов доставки и выставления счета.
+                                </p>
                             </div>
-                            <p style="margin: 0 0 24px 0; color: #4B5563; font-size: 14px; line-height: 1.5;">
-                                На сайте поступил новый заказ. Детали клиента и состав заказа представлены ниже:
-                            </p>
 
                             <!-- Блок с данными клиента -->
-                            <div style="background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; padding: 20px; margin-bottom: 28px;">
-                                <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 12px;">
-                                    Данные клиента
+                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 20px; margin-bottom: 28px;">
+                                <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; margin-bottom: 12px;">
+                                    Данные заказчика
                                 </div>
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size: 14px;">
+                                    {company_row}
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280; width: 140px;">Покупатель:</td>
-                                        <td style="padding: 4px 0; color: #111827; font-weight: 600;">{customer_name}</td>
+                                        <td style="padding: 4px 0; color: #64748B; width: 140px;">Контактное лицо:</td>
+                                        <td style="padding: 4px 0; color: #0F172A; font-weight: 600;">{customer_name}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280;">Телефон:</td>
-                                        <td style="padding: 4px 0; color: #111827; font-weight: 600;">
-                                            <a href="tel:{customer_phone}" style="color: #C49A45; text-decoration: none;">{customer_phone}</a>
+                                        <td style="padding: 4px 0; color: #64748B;">Телефон:</td>
+                                        <td style="padding: 4px 0; color: #0F172A; font-weight: 600;">
+                                            <a href="tel:{customer_phone}" style="color: #0284C7; text-decoration: none;">{customer_phone}</a>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280;">Email:</td>
-                                        <td style="padding: 4px 0; color: #111827;">
-                                            <a href="mailto:{customer_email}" style="color: #C49A45; text-decoration: none;">{customer_email}</a>
+                                        <td style="padding: 4px 0; color: #64748B;">Email:</td>
+                                        <td style="padding: 4px 0; color: #0F172A;">
+                                            <a href="mailto:{customer_email}" style="color: #0284C7; text-decoration: none;">{customer_email}</a>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280;">Адрес доставки:</td>
-                                        <td style="padding: 4px 0; color: #111827;">{delivery_address}</td>
+                                        <td style="padding: 4px 0; color: #64748B;">Тип доставки:</td>
+                                        <td style="padding: 4px 0; color: #0F172A; font-weight: 500;">{delivery_type_label}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280;">Оплата:</td>
-                                        <td style="padding: 4px 0; color: #111827; font-weight: 500;">{payment_method_label}</td>
+                                        <td style="padding: 4px 0; color: #64748B;">Адрес / Город:</td>
+                                        <td style="padding: 4px 0; color: #0F172A;">{delivery_address}</td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 4px 0; color: #6B7280;">Комментарий:</td>
-                                        <td style="padding: 4px 0; color: #374151; font-style: italic;">{comment}</td>
+                                        <td style="padding: 4px 0; color: #64748B;">Способ оплаты:</td>
+                                        <td style="padding: 4px 0; color: #0F172A; font-weight: 500;">{payment_method_label}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px 0; color: #64748B;">Комментарий:</td>
+                                        <td style="padding: 4px 0; color: #334155; font-style: italic;">{comment}</td>
                                     </tr>
                                 </table>
                             </div>
 
                             <!-- Состав заказа -->
-                            <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280; margin-bottom: 12px;">
-                                Состав заказа
+                            <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; margin-bottom: 12px;">
+                                Состав заявки
                             </div>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse; margin-bottom: 24px;">
                                 <thead>
-                                    <tr style="background-color: #F3F4F6; border-bottom: 1px solid #E5E7EB;">
-                                        <th style="padding: 10px 14px; color: #4B5563; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 30px;">#</th>
-                                        <th style="padding: 10px 14px; color: #4B5563; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: left;">Товар</th>
-                                        <th style="padding: 10px 14px; color: #4B5563; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Цена</th>
-                                        <th style="padding: 10px 14px; color: #4B5563; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center;">Кол-во</th>
-                                        <th style="padding: 10px 14px; color: #4B5563; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Сумма</th>
+                                    <tr style="background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+                                        <th style="padding: 10px 14px; color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 30px;">#</th>
+                                        <th style="padding: 10px 14px; color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: left;">Товар</th>
+                                        <th style="padding: 10px 14px; color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Цена</th>
+                                        <th style="padding: 10px 14px; color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center;">Кол-во</th>
+                                        <th style="padding: 10px 14px; color: #475569; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Сумма</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -168,12 +194,12 @@ def _build_html_email(order_data: dict[str, Any]) -> str:
                             </table>
 
                             <!-- Итог -->
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #000000; border-radius: 6px; padding: 16px 20px; color: #FFFFFF;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0F172A; border-radius: 6px; padding: 16px 20px; color: #FFFFFF;">
                                 <tr>
-                                    <td style="font-size: 15px; font-weight: 600; color: #E5E7EB;">
-                                        Итого к оплате:
+                                    <td style="font-size: 15px; font-weight: 600; color: #E2E8F0;">
+                                        Предварительная сумма:
                                     </td>
-                                    <td align="right" style="font-size: 20px; font-weight: 700; color: #C49A45;">
+                                    <td align="right" style="font-size: 20px; font-weight: 700; color: #38BDF8;">
                                         {total_amount_formatted}
                                     </td>
                                 </tr>
@@ -183,9 +209,9 @@ def _build_html_email(order_data: dict[str, Any]) -> str:
 
                     <!-- Подвал письма -->
                     <tr>
-                        <td style="background-color: #F9FAFB; padding: 20px 32px; border-top: 1px solid #E5E7EB; text-align: center; font-size: 12px; color: #9CA3AF;">
-                            Письмо сформировано автоматически сайтом мастерской «Алдуин».<br>
-                            Не отвечайте на это письмо, если не настроен обратный адрес.
+                        <td style="background-color: #F8FAFC; padding: 20px 32px; border-top: 1px solid #E2E8F0; text-align: center; font-size: 12px; color: #94A3B8;">
+                            Письмо сформировано автоматически интернет-магазином «НАМПАК».<br>
+                            Отдел продаж: +7 (993) 117-64-92 | +7 (965) 032-61-18 | nampack@yandex.ru
                         </td>
                     </tr>
 
@@ -204,6 +230,10 @@ def _build_plain_email(order_data: dict[str, Any]) -> str:
     customer_email = order_data.get("customer_email", "—")
     delivery_address = order_data.get("delivery_address", "—")
     comment = order_data.get("comment", "—")
+    company_name = order_data.get("company_name", "—")
+    raw_delivery = order_data.get("delivery_type") or "delivery"
+    delivery_type = DELIVERY_TYPES_MAP.get(raw_delivery, raw_delivery)
+
     raw_method = order_data.get("payment_method") or ""
     payment_method = PAYMENT_METHODS_MAP.get(raw_method, raw_method)
 
@@ -218,19 +248,25 @@ def _build_plain_email(order_data: dict[str, Any]) -> str:
 
     total_formatted = _format_price(order_data.get("total_amount", 0))
 
+    company_line = f"- Организация / ИНН: {company_name}\n" if company_name and company_name != "—" else ""
+
     return (
-        f"НОВЫЙ ЗАКАЗ #{order_id}\n"
-        f"Мастерская Алдуин\n\n"
-        f"ДАННЫЕ КЛИЕНТА:\n"
-        f"- Имя: {customer_name}\n"
+        f"НОВАЯ ЗАЯВКА #{order_id}\n"
+        f"НАМПАК — Упаковочные материалы\n\n"
+        f"ДАННЫЕ ЗАКАЗЧИКА:\n"
+        f"{company_line}"
+        f"- Контактное лицо: {customer_name}\n"
         f"- Телефон: {customer_phone}\n"
         f"- Email: {customer_email}\n"
-        f"- Адрес: {delivery_address}\n"
+        f"- Тип доставки: {delivery_type}\n"
+        f"- Адрес / Город: {delivery_address}\n"
         f"- Способ оплаты: {payment_method}\n"
         f"- Комментарий: {comment}\n\n"
-        f"СОСТАВ ЗАКАЗА:\n"
+        f"СОСТАВ ЗАЯВКИ:\n"
         + "\n".join(items_text)
-        + f"\n\nИТОГО К ОПЛАТЕ: {total_formatted}\n"
+        + f"\n\nПРЕДВАРИТЕЛЬНАЯ СУММА: {total_formatted}\n\n"
+        f"Менеджер НАМПАК свяжется с вами для согласования объема, доставки и выставления счета.\n"
+        f"Контакты: +7 (993) 117-64-92, +7 (965) 032-61-18, nampack@yandex.ru\n"
     )
 
 
@@ -260,14 +296,14 @@ def send_new_order_email(order_data: dict[str, Any]) -> None:
     def _create_message(to_email: str, is_for_admin: bool) -> MIMEMultipart:
         msg = MIMEMultipart("alternative")
         if is_for_admin:
-            subject = f"Новый заказ #{order_id} — Мастерская Алдуин"
+            subject = f"Новая заявка #{order_id} — НАМПАК"
         else:
-            subject = f"Ваш заказ #{order_id} принят — Мастерская Алдуин"
+            subject = f"Ваша заявка #{order_id} принята — НАМПАК"
 
         msg["Subject"] = Header(subject, "utf-8")
         # Яндекс требует, чтобы From совпадал с авторизованным пользователем.
         # Display name кодируем через RFC2047, адрес — только smtp_user.
-        display = Header("Мастерская Алдуин", "utf-8").encode()
+        display = Header("НАМПАК", "utf-8").encode()
         msg["From"] = f"{display} <{sender}>"
         msg["To"] = to_email
         msg.attach(MIMEText(_build_plain_email(order_data), "plain", "utf-8"))
@@ -397,9 +433,9 @@ def send_order_paid_email(order_data: dict[str, Any], in_production: bool = Fals
             <td align="center">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; border: 1px solid #E5E7EB;">
                     <tr>
-                        <td style="background-color: #000000; padding: 24px; text-align: center; border-bottom: 2px solid #C49A45;">
-                            <div style="font-size: 20px; font-weight: 700; color: #F3F4F6; letter-spacing: 0.1em; text-transform: uppercase;">МАСТЕРСКАЯ АЛДУИН</div>
-                            <div style="font-size: 12px; color: #C49A45; margin-top: 4px; text-transform: uppercase;">{status_title}</div>
+                        <td style="background-color: #0F172A; padding: 24px; text-align: center; border-bottom: 2px solid #0284C7;">
+                            <div style="font-size: 20px; font-weight: 700; color: #F3F4F6; letter-spacing: 0.1em; text-transform: uppercase;">НАМПАК</div>
+                            <div style="font-size: 12px; color: #38BDF8; margin-top: 4px; text-transform: uppercase;">{status_title}</div>
                         </td>
                     </tr>
                     <tr>
@@ -423,13 +459,13 @@ def send_order_paid_email(order_data: dict[str, Any], in_production: bool = Fals
     plain_content = f"Заказ #{order_id}\n{status_title}\n\n{status_desc}\nСумма: {total_amount_formatted}\n"
 
     sender = settings.smtp_user or f"noreply@{settings.smtp_host}"
-    display = Header("Мастерская Алдуин", "utf-8").encode()
+    display = Header("НАМПАК", "utf-8").encode()
 
     try:
         # Письмо покупателю
         if customer_email and "@" in customer_email:
             msg = MIMEMultipart("alternative")
-            msg["Subject"] = Header(f"Заказ #{order_id}: {status_title} — Мастерская Алдуин", "utf-8")
+            msg["Subject"] = Header(f"Заказ #{order_id}: {status_title} — НАМПАК", "utf-8")
             msg["From"] = f"{display} <{sender}>"
             msg["To"] = customer_email
             msg.attach(MIMEText(plain_content, "plain", "utf-8"))
@@ -538,9 +574,9 @@ def send_cdek_dispatched_email(
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 640px; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
                     <!-- Шапка -->
                     <tr>
-                        <td style="background-color: #000000; padding: 24px 32px; text-align: center; border-bottom: 2px solid #C49A45;">
-                            <div style="font-size: 20px; font-weight: 700; color: #F3F4F6; letter-spacing: 0.15em; text-transform: uppercase;">МАСТЕРСКАЯ АЛДУИН</div>
-                            <div style="font-size: 12px; color: #C49A45; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.2em;">Заказ передан в доставку СДЭК</div>
+                        <td style="background-color: #0F172A; padding: 24px 32px; text-align: center; border-bottom: 2px solid #0284C7;">
+                            <div style="font-size: 20px; font-weight: 700; color: #F3F4F6; letter-spacing: 0.15em; text-transform: uppercase;">НАМПАК</div>
+                            <div style="font-size: 12px; color: #38BDF8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.2em;">Заказ передан в доставку</div>
                         </td>
                     </tr>
 
@@ -625,7 +661,7 @@ def send_cdek_dispatched_email(
 </html>"""
 
     sender = settings.smtp_user or f"noreply@{settings.smtp_host}"
-    display = Header("Мастерская Алдуин", "utf-8").encode()
+    display = Header("НАМПАК", "utf-8").encode()
 
     try:
         # Письмо покупателю

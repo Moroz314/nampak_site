@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Calendar, Tag, ChevronRight, FileText, BookOpen } from 'lucide-react'
 import { api } from '../api/axios'
-
-/* ── Иконки ─────────────────────────────────────────────────────────────── */
-const CalendarIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-  </svg>
-)
 
 function decodeHtmlText(html) {
   if (!html) return ''
@@ -41,206 +34,204 @@ function ArticleCard({ article }) {
   const formattedHtml = cleanHtmlContent(article.content)
 
   return (
-    <article className="border-b border-forge-border/60 py-8 first:pt-0 last:border-0 overflow-hidden">
-      
+    <article className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden transition-all hover:shadow-md mb-8">
       {/* Обложка статьи */}
       {article.image_url && (
         <div
           onClick={() => setExpanded(e => !e)}
-          className="mb-5 overflow-hidden border border-forge-border cursor-pointer group bg-black"
+          className="overflow-hidden cursor-pointer group bg-slate-100 max-h-96"
         >
           <img
             src={article.image_url}
             alt={article.title}
-            className="w-full h-56 sm:h-72 md:h-80 object-cover transform group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+            className="w-full h-64 sm:h-80 md:h-96 object-cover transform group-hover:scale-105 transition-transform duration-500"
           />
         </div>
       )}
 
-      {/* Метаданные: Дата и Раздел */}
-      <div className="flex flex-wrap items-center gap-3 mb-3">
-        <div className="flex items-center gap-1.5 text-forge-muted text-xs font-body tracking-wider">
-          <CalendarIcon />
-          <span>{date}</span>
+      <div className="p-6 sm:p-8">
+        {/* Метаданные: Дата и Раздел */}
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{date}</span>
+          </div>
+
+          {article.section && (
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5]">
+              {article.section.name}
+            </span>
+          )}
         </div>
 
-        {article.section && (
-          <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 border border-forge-primary/40 text-forge-primary bg-forge-primary/10">
-            {article.section.name}
-          </span>
+        {/* Заголовок */}
+        <h2
+          onClick={() => setExpanded(e => !e)}
+          className="text-xl sm:text-2xl font-bold text-[#162330] leading-snug mb-3 hover:text-[#C59B6D] transition-colors cursor-pointer"
+        >
+          {article.title}
+        </h2>
+
+        {/* Текст */}
+        {expanded ? (
+          isHtml ? (
+            <div
+              className="font-sans text-sm text-slate-700 leading-relaxed space-y-4 pt-2 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:border [&_img]:border-slate-200 [&_img]:my-4 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-[#162330] [&_h3]:text-base [&_h3]:font-bold"
+              dangerouslySetInnerHTML={{ __html: formattedHtml }}
+            />
+          ) : (
+            <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-line pt-2">
+              {formattedHtml}
+            </div>
+          )
+        ) : (
+          <div className="text-slate-600 text-sm leading-relaxed">
+            {preview}
+            {hasMore && <span className="text-slate-400">…</span>}
+          </div>
+        )}
+
+        {/* Кнопка Развернуть / Свернуть */}
+        {hasMore && (
+          <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="text-xs font-bold text-[#162330] hover:text-[#C59B6D] transition-colors inline-flex items-center gap-1"
+            >
+              <span>{expanded ? 'Свернуть' : 'Читать полностью'}</span>
+              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${expanded ? '-rotate-90' : 'rotate-90'}`} />
+            </button>
+          </div>
         )}
       </div>
-
-      {/* Заголовок */}
-      <h2 className="font-serif font-semibold text-forge-text text-xl md:text-2xl
-                     leading-snug mb-3 hover:text-forge-primary transition-colors duration-200
-                     cursor-pointer break-words"
-        onClick={() => setExpanded(e => !e)}>
-        {article.title}
-      </h2>
-
-      {/* Разделитель */}
-      <div className="w-8 h-px bg-forge-primary/50 mb-4" />
-
-      {/* Текст */}
-      {expanded ? (
-        isHtml ? (
-          <div
-            className="article-html-content font-body text-sm leading-relaxed break-words space-y-4 [&_img]:max-w-full [&_img]:rounded-none [&_img]:border [&_img]:border-forge-border/60 [&_img]:my-4"
-            dangerouslySetInnerHTML={{ __html: formattedHtml }}
-          />
-        ) : (
-          <div className="text-forge-muted font-body text-sm leading-relaxed whitespace-pre-line break-words">
-            {formattedHtml}
-          </div>
-        )
-      ) : (
-        <div className="text-forge-muted font-body text-sm leading-relaxed break-words">
-          {preview}
-          {hasMore && <span className="text-forge-muted/50">…</span>}
-        </div>
-      )}
-
-      {hasMore && (
-        <button
-          onClick={() => setExpanded(e => !e)}
-          className="mt-4 text-forge-primary text-xs font-body tracking-[0.15em]
-                     uppercase hover:text-forge-gold-lt transition-colors duration-200"
-        >
-          {expanded ? '↑ Свернуть' : 'Читать далее →'}
-        </button>
-      )}
     </article>
   )
 }
 
-/* ── Скелетон загрузки ───────────────────────────────────────────────────── */
-function ArticleSkeleton() {
-  return (
-    <div className="border-b border-forge-border/60 py-8 animate-pulse">
-      <div className="h-44 w-full bg-forge-border/40 rounded mb-4" />
-      <div className="h-3 w-24 bg-forge-border rounded mb-3" />
-      <div className="h-6 w-3/4 bg-forge-border rounded mb-3" />
-      <div className="h-px w-8 bg-forge-border mb-4" />
-      <div className="space-y-2">
-        <div className="h-3 bg-forge-border rounded" />
-        <div className="h-3 bg-forge-border rounded w-5/6" />
-        <div className="h-3 bg-forge-border rounded w-4/6" />
-      </div>
-    </div>
-  )
-}
-
-/* ══════════════════════════════════════════════════════════════
-   SHARED ARTICLES PAGE COMPONENT
-   ══════════════════════════════════════════════════════════════ */
-export default function ArticlesPage({ type, title, subtitle, emptyText }) {
-  const [articles,        setArticles]        = useState([])
-  const [sections,        setSections]        = useState([])
+export default function ArticlesPage({ type = 'news', title, subtitle, emptyText }) {
+  const [articles, setArticles] = useState([])
+  const [sections, setSections] = useState([])
   const [selectedSection, setSelectedSection] = useState(null)
-  const [loading,         setLoading]         = useState(true)
-  const [error,           setError]           = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Загрузка разделов для обучения
   useEffect(() => {
-    if (type === 'training') {
-      api.get('/articles/sections/training')
-        .then(({ data }) => setSections(data || []))
-        .catch(() => setSections([]))
-    }
+    let active = true
+    setLoading(true)
+
+    Promise.all([
+      api.get(`/articles/?type=${type}`).catch(() => api.get(`/content/articles?type=${type}`)),
+      api.get(`/articles/sections/training`).catch(() => api.get(`/content/sections?type=${type}`)),
+    ])
+      .then(([articlesRes, sectionsRes]) => {
+        if (active) {
+          setArticles(articlesRes?.data || [])
+          setSections(sectionsRes?.data || [])
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => { active = false }
   }, [type])
 
-  // Загрузка статей
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const params = {}
-        if (type) params.type = type
-        if (type === 'training' && selectedSection) params.section_id = selectedSection
+  const filtered = selectedSection
+    ? articles.filter(a => a.section_id === selectedSection)
+    : articles
 
-        const { data } = await api.get('/articles/', { params })
-        setArticles(data)
-      } catch {
-        setError('Не удалось загрузить материалы. Попробуйте позже.')
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [type, selectedSection])
+  const pageTitle = title || (type === 'news' ? 'Новости' : 'Обучение')
+  const pageSubtitle = subtitle || (
+    type === 'news'
+      ? 'Новости производства НАМПАК, расширение ассортимента гофротары и анонсы.'
+      : 'Стандарты коробов для Wildberries и Ozon, свойства картона и инструкции.'
+  )
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-      {/* Шапка секции */}
-      <div className="mb-10">
-        <p className="gold-tag mb-3">◇ Мастерская Алдуин</p>
-        <h1 className="font-serif font-bold text-forge-text text-4xl md:text-5xl leading-tight mb-4">
-          {title}
-        </h1>
-        <div className="w-12 h-px bg-forge-primary" />
-        {subtitle && (
-          <p className="text-forge-muted font-body text-base mt-4 leading-relaxed">
-            {subtitle}
-          </p>
-        )}
-      </div>
+    <div className="bg-[#F8FAFC] min-h-screen py-10 md:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Хлебные крошки */}
+        <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6 font-medium">
+          <Link to="/" className="hover:text-[#162330] transition-colors">Главная</Link>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">{pageTitle}</span>
+        </nav>
 
-      {/* Табы разделов (для страницы обучения) */}
-      {type === 'training' && sections.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-8 border-b border-forge-border/40 pb-4">
-          <button
-            onClick={() => setSelectedSection(null)}
-            className={`px-4 py-2 text-xs font-body tracking-wider uppercase transition-colors ${
-              selectedSection === null
-                ? 'bg-forge-primary text-black font-semibold'
-                : 'border border-forge-border text-forge-muted hover:border-forge-primary hover:text-forge-text'
-            }`}
-          >
-            Все разделы
-          </button>
-          {sections.map(s => (
+        {/* Заголовок */}
+        <div className="mb-10">
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5] mb-3">
+            {type === 'news' ? 'Новости' : 'Обучение'}
+          </span>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-[#162330] tracking-tight mb-3">
+            {pageTitle}
+          </h1>
+          <p className="text-slate-600 text-base leading-relaxed">
+            {pageSubtitle}
+          </p>
+        </div>
+
+        {/* Фильтр по разделам (если есть) */}
+        {sections.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-8">
             <button
-              key={s.id}
-              onClick={() => setSelectedSection(s.id)}
-              className={`px-4 py-2 text-xs font-body tracking-wider uppercase transition-colors ${
-                selectedSection === s.id
-                  ? 'bg-forge-primary text-black font-semibold'
-                  : 'border border-forge-border text-forge-muted hover:border-forge-primary hover:text-forge-text'
+              onClick={() => setSelectedSection(null)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                selectedSection === null
+                  ? 'bg-[#162330] text-white shadow-xs'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              {s.name}
+              Все публикации ({articles.length})
             </button>
-          ))}
-        </div>
-      )}
+            {sections.map(s => {
+              const count = articles.filter(a => a.section_id === s.id).length
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedSection(s.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    selectedSection === s.id
+                      ? 'bg-[#162330] text-white shadow-xs'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {s.name} ({count})
+                </button>
+              )
+            })}
+          </div>
+        )}
 
-      {/* Состояния */}
-      {loading && (
-        <div>
-          {[1,2,3].map(i => <ArticleSkeleton key={i} />)}
-        </div>
-      )}
+        {/* Список статей */}
+        {loading ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-3xl p-8 border border-slate-100 animate-pulse h-48" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80">
+            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-800 mb-1">
+              {emptyText || 'Публикации скоро появятся'}
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Мы регулярно публикуем полезные материалы об упаковке и новости нашей компании.
+            </p>
+            <Link to="/" className="inline-flex px-5 py-2.5 rounded-xl bg-[#162330] text-white text-xs font-bold hover:bg-[#1E2F40]">
+              Перейти в каталог
+            </Link>
+          </div>
+        ) : (
+          <div>
+            {filtered.map(article => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
 
-      {error && (
-        <div className="py-12 text-center">
-          <p className="text-forge-muted font-body">{error}</p>
-        </div>
-      )}
-
-      {!loading && !error && articles.length === 0 && (
-        <div className="py-16 text-center border border-forge-border/40">
-          <p className="text-forge-primary/40 text-3xl mb-3" aria-hidden>◇</p>
-          <p className="text-forge-muted font-body">{emptyText ?? 'Материалы скоро появятся'}</p>
-        </div>
-      )}
-
-      {!loading && !error && articles.length > 0 && (
-        <div>
-          {articles.map(a => <ArticleCard key={a.id} article={a} />)}
-        </div>
-      )}
+      </div>
     </div>
   )
 }

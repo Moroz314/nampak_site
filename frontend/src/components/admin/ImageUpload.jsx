@@ -53,16 +53,16 @@ export default function ImageUpload({ value = [], onChange }) {
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
           {images.map((url, index) => (
-            <div key={`${url}-${index}`} className={`relative aspect-square rounded-xl overflow-hidden border-2 ${index === 0 ? 'border-orange-500' : 'border-gray-200'}`}>
+            <div key={`${url}-${index}`} className={`relative aspect-square rounded-xl overflow-hidden border-2 ${index === 0 ? 'border-[#C59B6D]' : 'border-gray-200'}`}>
               <img src={url} alt={`Фото товара ${index + 1}`} className="w-full h-full object-cover" />
               <button type="button" onClick={() => makeCover(index)} className="absolute inset-0 z-10 w-full h-full cursor-pointer" aria-label={index === 0 ? 'Обложка товара' : 'Сделать обложкой'} />
-              {index === 0 && <span className="absolute left-2 bottom-2 z-20 bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded pointer-events-none">ОБЛОЖКА</span>}
+              {index === 0 && <span className="absolute left-2 bottom-2 z-20 bg-[#162330] text-[#C59B6D] text-[10px] font-bold px-2 py-1 rounded pointer-events-none">ОБЛОЖКА</span>}
               <button type="button" onClick={() => removeImage(index)} className="absolute right-2 top-2 z-20 w-7 h-7 rounded-full bg-red-600 text-white font-bold" aria-label="Удалить фото">×</button>
             </div>
           ))}
         </div>
       )}
-      <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading} className="w-full py-3 rounded-xl text-sm font-semibold bg-orange-50 text-orange-700 border border-orange-200 disabled:opacity-50">
+      <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading} className="w-full py-3 rounded-xl text-sm font-bold bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5] hover:bg-[#F3EADF] transition-colors disabled:opacity-50">
         {uploading ? 'Загружаю...' : '+ Добавить фотографии'}
       </button>
 

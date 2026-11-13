@@ -1,592 +1,245 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { api } from '../api/axios'
-import {
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  XCircle,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  Check,
-  Truck,
-  RotateCcw,
-  ShoppingBag,
-  ExternalLink,
-} from 'lucide-react'
 
-const MAX_POLLING_SECONDS = 30
-const POLLING_INTERVAL_MS = 2500
+/* ── Inline SVG Icons ─────────────────────────────────────────────────────── */
+const CheckCircleIcon = ({ className = "w-16 h-16" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+)
+
+const CopyIcon = ({ className = "w-4 h-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={2} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9 9 9 0 0 0-9 9v.876m15 7.124H9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125Z" />
+  </svg>
+)
+
+const CheckIcon = ({ className = "w-4 h-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={2.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+  </svg>
+)
+
+const TgIcon = ({ className = "w-4 h-4" }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+)
+
+const MaxIcon = ({ className = "w-4 h-4" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    <path d="M8 10h.01M12 10h.01M16 10h.01" />
+  </svg>
+)
+
+const PhoneIcon = ({ className = "w-4 h-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={2} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+  </svg>
+)
+
+const STATUS_LABELS = {
+  pending:       'В обработке у менеджера',
+  confirmed:     'Подтвержден / Счет выставлен',
+  in_production: 'В производстве / Комплектуется',
+  shipped:       'Отгружен / Доставляется',
+  completed:     'Завершен',
+  cancelled:     'Отменен',
+}
+
+const DELIVERY_LABELS = {
+  delivery:    'Доставка транспортной компанией / курьером',
+  pickup:      'Самовывоз со склада',
+  custom_calc: 'Индивидуальный расчёт логистики',
+}
 
 export default function OrderSuccessPage() {
   const { orderId } = useParams()
-  const navigate = useNavigate()
-
-  // Статусы интерфейса: 'loading' | 'checking' | 'paid' | 'pending_timeout' | 'failed' | 'not_found' | 'error'
-  const [uiState, setUiState] = useState('loading')
   const [order, setOrder] = useState(null)
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isRetrying, setIsRetrying] = useState(false)
-  const [retryError, setRetryError] = useState('')
-  const [showDetails, setShowDetails] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
-
-  const pollingTimerRef = useRef(null)
-  const secondsTimerRef = useRef(null)
-  const isMountedRef = useRef(true)
-
-  // Очистка таймеров
-  const stopPolling = useCallback(() => {
-    if (pollingTimerRef.current) {
-      clearInterval(pollingTimerRef.current)
-      pollingTimerRef.current = null
-    }
-    if (secondsTimerRef.current) {
-      clearInterval(secondsTimerRef.current)
-      secondsTimerRef.current = null
-    }
-  }, [])
-
-  // Запрос статуса с бэкенда (источник истины — БД)
-  const checkStatus = useCallback(async () => {
-    if (!orderId) return null
-    try {
-      const { data } = await api.get(`/orders/${encodeURIComponent(orderId)}/status`)
-      if (!isMountedRef.current) return null
-      setOrder(data)
-
-      const status = data.status
-      if (status === 'paid' || status === 'in_production' || status === 'shipped') {
-        setUiState('paid')
-        stopPolling()
-        return data
-      } else if (status === 'cancelled' || status === 'canceled' || status === 'failed') {
-        setUiState('failed')
-        stopPolling()
-        return data
-      } else if (status === 'pending') {
-        // Заказ ожидает оплаты или вебхука
-        setUiState((prev) => (prev === 'pending_timeout' ? 'pending_timeout' : 'checking'))
-        return data
-      }
-      return data
-    } catch (err) {
-      if (!isMountedRef.current) return null
-      console.error('Ошибка проверки статуса заказа:', err)
-      if (err.response?.status === 404) {
-        setUiState('not_found')
-        stopPolling()
-      } else {
-        setErrorMessage(err.response?.data?.detail || 'Не удалось получить статус заказа')
-      }
-      return null
-    }
-  }, [orderId, stopPolling])
-
-  // Запуск опроса при монтировании
-  const startPollingFlow = useCallback(() => {
-    stopPolling()
-    setElapsedSeconds(0)
-    setUiState('checking')
-
-    // 1. Первый запрос сразу
-    checkStatus().then((data) => {
-      if (!data) return
-      const s = data.status
-      if (s !== 'pending') return
-
-      // 2. Таймер секунд для прогресса
-      secondsTimerRef.current = setInterval(() => {
-        setElapsedSeconds((sec) => {
-          const next = sec + 1
-          if (next >= MAX_POLLING_SECONDS) {
-            stopPolling()
-            setUiState('pending_timeout')
-          }
-          return next
-        })
-      }, 1000)
-
-      // 3. Интервал опроса статуса каждые 2.5 секунды
-      pollingTimerRef.current = setInterval(() => {
-        checkStatus()
-      }, POLLING_INTERVAL_MS)
-    })
-  }, [checkStatus, stopPolling])
+  const [settings, setSettings] = useState({
+    social_tg: 'https://t.me/namupak',
+    social_max: 'https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg',
+    contact_phone1: '+7 (993) 117-64-92',
+    contact_phone2: '+7 (965) 032-61-18',
+    contact_email: 'nampack@yandex.ru',
+  })
 
   useEffect(() => {
-    isMountedRef.current = true
+    // Подгружаем настройки сайта для актуальных контактов
+    api.get('/settings/')
+      .then(({ data }) => setSettings(prev => ({ ...prev, ...data })))
+      .catch(() => {})
+
+    // Подгружаем данные заказа
     if (orderId) {
-      startPollingFlow()
+      api.get(`/orders/${encodeURIComponent(orderId)}/status`)
+        .then(({ data }) => setOrder(data))
+        .catch(() => {})
+        .finally(() => setLoading(false))
     } else {
-      setUiState('not_found')
+      setLoading(false)
     }
+  }, [orderId])
 
-    return () => {
-      isMountedRef.current = false
-      stopPolling()
-    }
-  }, [orderId, startPollingFlow, stopPolling])
-
-  // Повторить попытку оплаты
-  const handleRetryPayment = async () => {
+  const copyOrderId = () => {
     if (!orderId) return
-    setIsRetrying(true)
-    setRetryError('')
-    try {
-      const { data } = await api.post(`/orders/${encodeURIComponent(orderId)}/retry-payment`)
-      if (data.payment_url) {
-        window.location.href = data.payment_url
-        return
-      }
-      // Если URL не вернулся, перезапускаем опрос
-      startPollingFlow()
-    } catch (err) {
-      console.error('Ошибка повтора оплаты:', err)
-      const msg = err.response?.data?.detail || 'Не удалось создать новый платеж. Попробуйте оформить заказ заново.'
-      setRetryError(msg)
-    } finally {
-      setIsRetrying(false)
-    }
-  }
-
-  // Копирование номера заказа
-  const handleCopyOrderId = () => {
-    if (!orderId) return
-    navigator.clipboard?.writeText(orderId)
+    navigator.clipboard.writeText(orderId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Форматирование сумм
-  const formatMoney = (val) => {
-    return Number(val || 0).toLocaleString('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 0,
-    })
-  }
-
-  // Форматирование даты
-  const formatDate = (isoString) => {
-    if (!isoString) return ''
-    try {
-      return new Date(isoString).toLocaleString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    } catch {
-      return isoString
-    }
-  }
+  const tgUrl  = settings.social_tg || 'https://t.me/namupak'
+  const maxUrl = settings.social_max || 'https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg'
+  const phone1 = settings.contact_phone1 || '+7 (993) 117-64-92'
+  const phone2 = settings.contact_phone2 || '+7 (965) 032-61-18'
 
   return (
-    <div className="min-h-screen bg-black text-forge-text py-12 md:py-20">
+    <div className="bg-[#F8FAFC] py-12 md:py-20 min-h-[75vh]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        
+        {/* Карточка подтверждения */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 text-center animate-fade-up">
+          
+          {/* Иконка успеха */}
+          <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-6">
+            <CheckCircleIcon className="w-12 h-12" />
+          </div>
 
-        {/* ══════════════════════════════════════════════════════════
-            1. ЭКРАН ПРОВЕРКИ СТАТУСА (PENDING POLLING)
-           ══════════════════════════════════════════════════════════ */}
-        {uiState === 'checking' && (
-          <div className="text-center py-12 animate-fade-up">
-            <div className="relative inline-flex items-center justify-center mb-6">
-              <div className="w-20 h-20 rounded-full border-2 border-forge-primary/20 border-t-forge-primary animate-spin" />
-              <Loader2 className="w-8 h-8 text-forge-primary absolute animate-pulse" />
-            </div>
+          <span className="text-xs font-bold uppercase tracking-widest text-[#C59B6D] mb-2 block">
+            Заявка зарегистрирована
+          </span>
 
-            <p className="gold-tag mb-3">◇ Проверка оплаты</p>
-            <h1 className="font-serif font-bold text-forge-text text-3xl md:text-4xl mb-4">
-              Проверяем оплату…
-            </h1>
-            <div className="w-12 h-px bg-forge-primary mx-auto mb-6" />
+          <h1 className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-[#162330] mb-3">
+            Спасибо за обращение в НАМПАК!
+          </h1>
 
-            <p className="text-forge-muted font-body text-sm max-w-md mx-auto leading-relaxed mb-6">
-              Пожалуйста, подождите, мы связываемся с платёжным шлюзом ЮKassa для подтверждения транзакции.
-            </p>
+          <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed mb-6">
+            Ваша заявка принята в работу. Менеджер свяжется с вами в течение 15–30 минут (в рабочее время) для согласования объёма партии, условий доставки и выставления счёта.
+          </p>
 
-            {/* Прогресс-бар опроса */}
-            <div className="max-w-xs mx-auto mb-8">
-              <div className="w-full bg-forge-surface h-1.5 border border-forge-border overflow-hidden">
-                <div
-                  className="bg-forge-primary h-full transition-all duration-1000 ease-linear"
-                  style={{ width: `${Math.min(100, (elapsedSeconds / MAX_POLLING_SECONDS) * 100)}%` }}
-                />
+          {/* Плашка с номером заказа */}
+          <div className="inline-flex items-center gap-3 bg-slate-50 border border-slate-200 px-5 py-3 rounded-2xl mb-8">
+            <div className="text-left">
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                Номер заявки:
               </div>
-              <p className="text-forge-muted/60 text-[11px] font-mono mt-2">
-                Ожидание ответа: {elapsedSeconds} сек / {MAX_POLLING_SECONDS} сек
-              </p>
-            </div>
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-forge-border bg-forge-surface/60 text-xs text-forge-muted">
-              <span>Заказ:</span>
-              <strong className="text-forge-text font-mono">{orderId}</strong>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            2. ТАЙМАУТ ПРОВЕРКИ (PENDING TIMEOUT > 30s)
-           ══════════════════════════════════════════════════════════ */}
-        {uiState === 'pending_timeout' && (
-          <div className="text-center py-12 animate-fade-up">
-            <div className="text-amber-400 mb-6 flex justify-center">
-              <Clock className="w-16 h-16 stroke-[1.3] animate-pulse" />
-            </div>
-
-            <p className="gold-tag mb-3">⏱ Платёж обрабатывается</p>
-            <h1 className="font-serif font-bold text-forge-text text-3xl md:text-4xl mb-4">
-              Ожидаем подтверждения от банка
-            </h1>
-            <div className="w-12 h-px bg-forge-primary mx-auto mb-6" />
-
-            <div className="bg-forge-surface border border-forge-border p-6 mb-8 max-w-lg mx-auto text-left space-y-3">
-              <p className="text-forge-text font-body text-base font-medium">
-                Если оплата прошла, вы получите письмо. Проверьте позже.
-              </p>
-              <p className="text-forge-muted font-body text-sm leading-relaxed">
-                Иногда банку требуется чуть больше времени на подтверждение транзакции. 
-                Чек и информация о заказе поступят на вашу почту сразу после завершения обработки.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <button
-                type="button"
-                onClick={startPollingFlow}
-                className="btn-gold w-full sm:w-auto"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Проверить снова
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowDetails((v) => !v)}
-                className="btn-ghost w-full sm:w-auto"
-              >
-                {showDetails ? 'Скрыть детали' : 'Детали заказа'}
-                {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-            </div>
-
-            <p className="text-forge-muted/60 text-xs">
-              Номер вашего заказа:{' '}
-              <button
-                type="button"
-                onClick={handleCopyOrderId}
-                className="font-mono text-forge-primary hover:underline ml-1"
-                title="Скопировать"
-              >
-                {orderId}
-              </button>
-            </p>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            3. ЭКРАН УСПЕШНОЙ ОПЛАТЫ (PAID / IN_PRODUCTION)
-           ══════════════════════════════════════════════════════════ */}
-        {uiState === 'paid' && (
-          <div className="text-center py-10 animate-fade-up">
-            <div className="text-forge-primary mb-6 flex justify-center">
-              <CheckCircle className="w-16 h-16 stroke-[1.2]" />
-            </div>
-
-            <p className="gold-tag mb-3">✓ Оплата подтверждена</p>
-            <h1 className="font-serif font-bold text-forge-text text-3xl md:text-4xl mb-3">
-              Заказ оплачен, номер № {orderId}
-            </h1>
-            <div className="w-12 h-px bg-forge-primary mx-auto mb-6" />
-
-            {/* Плашка с номером и статусом */}
-            <div className="bg-forge-surface border border-forge-primary/40 p-6 max-w-lg mx-auto mb-8 text-left space-y-4 shadow-gold-sm">
-              <div className="flex items-center justify-between border-b border-forge-border pb-3">
-                <span className="text-forge-muted text-xs uppercase tracking-wider">Номер заказа</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-forge-primary text-lg">{orderId}</span>
-                  <button
-                    type="button"
-                    onClick={handleCopyOrderId}
-                    className="text-forge-muted hover:text-forge-primary transition-colors p-1"
-                    title="Скопировать номер"
-                  >
-                    {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
+              <div className="font-heading font-extrabold text-xl text-[#162330] tracking-wide">
+                {orderId || 'ORD-NEW'}
               </div>
-
-              {order?.status === 'in_production' ? (
-                <div className="text-sm text-forge-gold-lt bg-forge-primary/10 border border-forge-primary/30 p-3">
-                  В заказе есть изделия индивидуального изготовления. Заказ передан мастерам в производство.
-                </div>
-              ) : (
-                <p className="text-forge-muted font-body text-sm leading-relaxed">
-                  Чек и детали заказа отправлены на вашу электронную почту. Мастерская приступает к упаковке и передаче в доставку.
-                </p>
-              )}
-
-              {order?.total_amount && (
-                <div className="flex items-center justify-between pt-1 text-sm">
-                  <span className="text-forge-muted">Итого оплачено:</span>
-                  <span className="font-serif font-bold text-forge-text text-lg">
-                    {formatMoney(order.total_amount)}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Кнопки действий */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <a
-                href="#order-details"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setShowDetails(true)
-                  setTimeout(() => {
-                    document.getElementById('order-details')?.scrollIntoView({ behavior: 'smooth' })
-                  }, 100)
-                }}
-                className="btn-gold w-full sm:w-auto"
-              >
-                Детали заказа ↓
-              </a>
-
-              <Link to="/" className="btn-ghost w-full sm:w-auto">
-                <ShoppingBag className="w-4 h-4" />
-                Вернуться в каталог
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            4. ЭКРАН НЕУДАЧНОЙ ОПЛАТЫ (FAILED / CANCELED)
-           ══════════════════════════════════════════════════════════ */}
-        {uiState === 'failed' && (
-          <div className="text-center py-10 animate-fade-up">
-            <div className="text-red-400 mb-6 flex justify-center">
-              <XCircle className="w-16 h-16 stroke-[1.2]" />
-            </div>
-
-            <p className="text-xs uppercase tracking-[0.2em] font-serif text-red-400 mb-3">
-              ✕ Транзакция отклонена
-            </p>
-            <h1 className="font-serif font-bold text-forge-text text-3xl md:text-4xl mb-4">
-              Оплата не прошла
-            </h1>
-            <div className="w-12 h-px bg-red-400/40 mx-auto mb-6" />
-
-            <div className="bg-red-950/20 border border-red-900/40 p-6 max-w-lg mx-auto mb-8 text-left space-y-3">
-              <p className="text-forge-text font-body text-base">
-                К сожалению, платёж по заказу <strong className="font-mono text-forge-primary">{orderId}</strong> не был завершён.
-              </p>
-              <p className="text-forge-muted font-body text-sm leading-relaxed">
-                Деньги с вашей карты не были списаны. Возможно, истёк срок сессии, не хватило средств на балансе или банк отклонил операцию.
-              </p>
-              {retryError && (
-                <div className="text-xs text-red-300 bg-red-900/30 p-2.5 border border-red-800/40 mt-3 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>{retryError}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Кнопка «Попробовать снова» */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <button
-                type="button"
-                onClick={handleRetryPayment}
-                disabled={isRetrying}
-                className="btn-gold w-full sm:w-auto"
-              >
-                {isRetrying ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Создаем платеж…
-                  </>
-                ) : (
-                  <>
-                    <RotateCcw className="w-4 h-4" />
-                    Попробовать снова
-                  </>
-                )}
-              </button>
-
-              <Link to="/checkout" className="btn-ghost w-full sm:w-auto">
-                Изменить способ оплаты
-              </Link>
             </div>
 
             <button
-              type="button"
-              onClick={() => setShowDetails((v) => !v)}
-              className="text-xs text-forge-muted hover:text-forge-primary transition-colors underline underline-offset-4"
+              onClick={copyOrderId}
+              className="p-2 text-slate-400 hover:text-[#C59B6D] hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition-all cursor-pointer"
+              title="Скопировать номер заказа"
             >
-              {showDetails ? 'Скрыть детали заказа' : 'Посмотреть детали заказа'}
+              {copied ? <CheckIcon className="w-4 h-4 text-emerald-600" /> : <CopyIcon className="w-4 h-4" />}
             </button>
           </div>
-        )}
 
-        {/* ══════════════════════════════════════════════════════════
-            5. ЭКРАН "ЗАКАЗ НЕ НАЙДЕН"
-           ══════════════════════════════════════════════════════════ */}
-        {uiState === 'not_found' && (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="text-forge-primary/40 mb-6 flex justify-center">
-              <AlertCircle className="w-16 h-16 stroke-[1.2]" />
-            </div>
-
-            <h1 className="font-serif font-bold text-forge-text text-3xl mb-4">
-              Заказ не найден
-            </h1>
-            <p className="text-forge-muted font-body text-sm max-w-md mx-auto mb-8">
-              Заказ с номером <strong className="font-mono text-forge-text">{orderId}</strong> не существует или был удален.
-            </p>
-
-            <Link to="/" className="btn-gold">
-              Перейти в каталог
-            </Link>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            6. КАРТОЧКА ДЕТАЛЕЙ ЗАКАЗА (ДЛЯ ВСЕХ СОСТОЯНИЙ С ORDER)
-           ══════════════════════════════════════════════════════════ */}
-        {order && (
-          <div
-            id="order-details"
-            className={`mt-12 pt-8 border-t border-forge-border transition-all duration-300 ${
-              uiState === 'paid' || showDetails ? 'block' : 'hidden'
-            }`}
-          >
-            <div className="bg-[#0e0e11] border border-forge-border p-6 md:p-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-forge-border pb-5 mb-6">
-                <div>
-                  <h2 className="font-serif font-bold text-forge-text text-xl md:text-2xl">
-                    Состав и детали заказа
-                  </h2>
-                  <p className="text-forge-muted text-xs font-mono mt-1">
-                    {order.order_id} · {formatDate(order.created_at)}
-                  </p>
-                </div>
-
-                {/* Бейдж статуса */}
-                <div>
-                  {order.status === 'paid' && (
-                    <span className="px-3 py-1 bg-green-950/60 border border-green-700/50 text-green-300 text-xs font-medium uppercase tracking-wider">
-                      Оплачен
-                    </span>
-                  )}
-                  {order.status === 'in_production' && (
-                    <span className="px-3 py-1 bg-amber-950/60 border border-amber-700/50 text-amber-300 text-xs font-medium uppercase tracking-wider">
-                      В производстве
-                    </span>
-                  )}
-                  {order.status === 'pending' && (
-                    <span className="px-3 py-1 bg-yellow-950/60 border border-yellow-700/50 text-yellow-300 text-xs font-medium uppercase tracking-wider">
-                      Ожидает оплаты
-                    </span>
-                  )}
-                  {order.status === 'cancelled' && (
-                    <span className="px-3 py-1 bg-red-950/60 border border-red-700/50 text-red-300 text-xs font-medium uppercase tracking-wider">
-                      Отменён
-                    </span>
-                  )}
-                  {order.status === 'shipped' && (
-                    <span className="px-3 py-1 bg-blue-950/60 border border-blue-700/50 text-blue-300 text-xs font-medium uppercase tracking-wider">
-                      Отправлен СДЭК
-                    </span>
-                  )}
-                </div>
+          {/* Детали заказа если подгрузились */}
+          {order && (
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 text-left mb-8 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span className="text-slate-500">Текущий статус:</span>
+                <span className="font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  {STATUS_LABELS[order.status] || order.status}
+                </span>
               </div>
 
-              {/* Позиции заказа */}
-              <div className="mb-6">
-                <h3 className="text-xs uppercase tracking-wider text-forge-primary font-serif mb-3">
-                  Товары ({order.items?.length || 0})
-                </h3>
-                <div className="divide-y divide-forge-border/40">
-                  {order.items?.map((item) => (
-                    <div key={item.id} className="py-3 flex items-center justify-between text-sm">
-                      <div className="pr-4">
-                        <span className="text-forge-text font-body font-medium">{item.product_name}</span>
-                        <div className="text-xs text-forge-muted mt-0.5">
-                          {formatMoney(item.product_price)} × {item.quantity} шт.
-                        </div>
-                      </div>
-                      <span className="font-medium text-forge-text font-mono flex-shrink-0">
-                        {formatMoney(Number(item.product_price) * item.quantity)}
-                      </span>
-                    </div>
-                  ))}
+              {order.company_name && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Организация / ИНН:</span>
+                  <span className="font-semibold text-[#162330]">{order.company_name}</span>
                 </div>
-              </div>
+              )}
 
-              {/* Доставка и Получатель */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 border-t border-forge-border text-sm mb-6">
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-forge-primary font-serif mb-2 flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" />
-                    Доставка СДЭК
-                  </h3>
-                  <p className="text-forge-muted text-xs leading-relaxed">
-                    {order.delivery_address}
-                  </p>
-                  {order.cdek_number && (
-                    <p className="text-xs text-forge-text mt-2 font-mono flex items-center gap-1.5">
-                      <span>Трек-номер:</span>
-                      <a
-                        href={`https://www.cdek.ru/ru/tracking?order_id=${order.cdek_number}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-forge-primary underline flex items-center gap-1"
-                      >
-                        {order.cdek_number}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-forge-primary font-serif mb-2">
-                    Получатель
-                  </h3>
-                  <p className="text-forge-text text-xs font-medium">{order.guest_name}</p>
-                  <p className="text-forge-muted text-xs">{order.guest_phone}</p>
-                  {order.guest_email && (
-                    <p className="text-forge-muted text-xs">{order.guest_email}</p>
-                  )}
-                  {order.comment && (
-                    <p className="text-forge-muted/70 text-xs italic mt-2 border-l border-forge-primary/30 pl-2">
-                      «{order.comment}»
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Итоги */}
-              <div className="pt-4 border-t border-forge-border space-y-2 text-sm">
-                <div className="flex justify-between text-forge-muted text-xs">
-                  <span>Доставка СДЭК</span>
-                  <span>{formatMoney(order.delivery_cost)}</span>
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t border-forge-border/40">
-                  <span className="text-xs uppercase tracking-wider text-forge-muted">Итого</span>
-                  <span className="font-serif font-bold text-forge-primary text-xl">
-                    {formatMoney(order.total_amount)}
+              {order.delivery_type && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Способ получения:</span>
+                  <span className="font-medium text-[#162330]">
+                    {DELIVERY_LABELS[order.delivery_type] || order.delivery_type}
                   </span>
                 </div>
-              </div>
+              )}
+
+              {order.total_amount && (
+                <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                  <span className="text-slate-500 font-medium">Предварительная сумма:</span>
+                  <span className="font-heading font-black text-base text-[#162330]">
+                    {Number(order.total_amount).toLocaleString('ru-RU', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} ₽
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Блок оперативной связи с менеджером */}
+          <div className="border-t border-slate-100 pt-8 mt-2 space-y-4">
+            <h3 className="font-heading font-bold text-sm text-[#162330]">
+              Хотите ускорить обработку или задать срочный вопрос?
+            </h3>
+            <p className="text-xs text-slate-500">
+              Напишите нам в удобный мессенджер с указанием номера заявки <strong>{orderId}</strong>:
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={tgUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <TgIcon className="w-4 h-4" />
+                <span>Написать в Telegram</span>
+              </a>
+
+              <a
+                href={maxUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <MaxIcon className="w-4 h-4" />
+                <span>Написать в Max</span>
+              </a>
+
+              <a
+                href={`tel:${phone1.replace(/\D/g, '')}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-300 hover:border-[#C59B6D] text-[#162330] rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <PhoneIcon className="w-4 h-4 text-[#C59B6D]" />
+                <span>{phone1}</span>
+              </a>
             </div>
           </div>
-        )}
+
+          {/* Кнопка возврата в каталог */}
+          <div className="mt-10 pt-6 border-t border-slate-100">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#162330] hover:bg-[#1E2F40] text-white rounded-xl text-xs font-heading font-bold uppercase tracking-wider transition-colors shadow-sm"
+            >
+              <span>Вернуться в каталог товаров</span>
+              <span>→</span>
+            </Link>
+          </div>
+
+        </div>
 
       </div>
     </div>

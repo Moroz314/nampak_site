@@ -32,7 +32,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BASE — Премиальный тёмный стиль
+   BASE — Светлый современный B2B стиль «НАМПАК»
    ══════════════════════════════════════════════════════════════ */
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
@@ -41,25 +41,29 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #000000;
+    background-color: #F8FAFC;
+    color: #162330;
   }
 
   body {
     @apply bg-forge-bg text-forge-text font-body;
-    background-color: #000000 !important;
+    background-color: #F8FAFC !important;
+    color: #162330 !important;
     min-height: 100svh;
   }
 
   /* Скроллбар */
-  ::-webkit-scrollbar              { width: 6px; }
-  ::-webkit-scrollbar-track        { @apply bg-forge-surface; }
-  ::-webkit-scrollbar-thumb        { @apply bg-forge-primary/50 rounded; }
-  ::-webkit-scrollbar-thumb:hover  { @apply bg-forge-primary; }
+  ::-webkit-scrollbar              { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track        { background: #F1F5F9; }
+  ::-webkit-scrollbar-thumb        { background: #CBD5E1; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover  { background: #94A3B8; }
 
-  /* Выделение */
-  ::selection { @apply bg-forge-primary/30 text-forge-text; }
+  /* Выделение текста */
+  ::selection { background-color: rgba(197, 155, 109, 0.25); color: #162330; }
 
-  h1, h2, h3 { @apply font-serif; }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-nampack-dark;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -69,60 +73,72 @@
 
   /* ── Кнопки ──────────────────────────────────────────────── */
   .btn-gold {
-    @apply inline-flex items-center gap-2
-           px-8 py-4
-           bg-forge-primary text-black
-           font-body font-semibold text-sm tracking-[0.12em] uppercase
-           rounded-none
-           transition-all duration-200
-           disabled:opacity-40 disabled:cursor-not-allowed;
-    &:hover { @apply bg-forge-gold-lt; }
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3.5
+           bg-nampack-gold text-white
+           font-heading font-semibold text-sm tracking-wide
+           rounded-lg shadow-sm
+           transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    &:hover { @apply bg-nampack-gold-hover shadow; }
+    &:active { transform: scale(0.98); }
+  }
+
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3.5
+           bg-nampack-dark text-white
+           font-heading font-semibold text-sm tracking-wide
+           rounded-lg shadow-sm
+           transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    &:hover { @apply bg-nampack-dark-hover shadow; }
     &:active { transform: scale(0.98); }
   }
 
   .btn-ghost {
-    @apply inline-flex items-center gap-2
-           px-8 py-4
-           bg-transparent text-forge-primary
-           font-body font-semibold text-sm tracking-[0.12em] uppercase
-           border border-forge-border
-           rounded-none
-           transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3.5
+           bg-white text-nampack-dark
+           font-heading font-semibold text-sm tracking-wide
+           border border-slate-200
+           rounded-lg shadow-sm
+           transition-all duration-150;
     &:hover {
-      @apply border-forge-primary;
-      background-color: rgba(196, 154, 69, 0.05);
+      @apply border-nampack-gold text-nampack-gold bg-nampack-gold-light/40;
     }
   }
 
   /* ── Карточка товара ──────────────────────────────────────── */
   .card-product {
-    @apply bg-forge-surface border border-forge-border
-           transition-all duration-300
-           hover:border-forge-primary/60 hover:shadow-gold;
+    @apply bg-white border border-slate-200 rounded-xl overflow-hidden
+           transition-all duration-200
+           hover:border-nampack-gold/70 hover:shadow-brand;
   }
 
-  /* ── Золотой разделитель ─────────────────────────────────── */
+  /* ── Разделитель ─────────────────────────────────────────── */
   .gold-divider {
-    @apply w-12 h-px bg-forge-primary mx-auto my-6;
+    @apply w-12 h-1 bg-nampack-gold rounded-full mx-auto my-5;
   }
 
   /* ── Навигационная ссылка ────────────────────────────────── */
   .nav-link {
-    @apply relative text-forge-muted text-xs tracking-[0.2em] uppercase
-           font-body transition-colors duration-200 hover:text-forge-text;
+    @apply relative text-slate-600 text-sm font-heading font-medium
+           transition-colors duration-150 hover:text-nampack-dark;
   }
-  .nav-link.active { @apply text-forge-primary; }
+  .nav-link.active { @apply text-nampack-gold font-bold; }
 
   /* ── Заголовок секции ────────────────────────────────────── */
   .section-title {
-    @apply font-serif font-bold text-forge-text
-           text-3xl md:text-4xl leading-tight;
+    @apply font-heading font-extrabold text-nampack-dark
+           text-2xl md:text-3xl lg:text-4xl leading-tight;
   }
 
   /* ── Тэг / Badge ─────────────────────────────────────────── */
   .gold-tag {
-    @apply text-forge-primary text-xs font-body font-medium
-           tracking-[0.25em] uppercase;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full
+           text-xs font-heading font-semibold
+           bg-nampack-gold-light text-[#926435] border border-nampack-gold-border;
   }
 }
 
@@ -131,10 +147,10 @@
    ══════════════════════════════════════════════════════════════ */
 @layer utilities {
   .text-glow-gold {
-    text-shadow: 0 0 30px rgba(196, 154, 69, 0.40);
+    text-shadow: 0 0 20px rgba(197, 155, 109, 0.35);
   }
   .border-gold-thin {
-    border-color: rgba(196, 154, 69, 0.25);
+    border-color: rgba(197, 155, 109, 0.40);
   }
 }
 
@@ -197,7 +213,7 @@
 }
 
 .article-html-content {
-  color: #a3a3a3;
+  color: #334155;
   overflow-wrap: break-word;
   word-break: break-word;
   word-wrap: break-word;
@@ -211,20 +227,20 @@
 }
 .article-html-content strong,
 .article-html-content b {
-  color: #f3f4f6;
+  color: #0F172A;
   font-weight: 600;
 }
 .article-html-content em,
 .article-html-content i {
   font-style: italic;
-  color: #e5e7eb;
+  color: #475569;
 }
 .article-html-content h1,
 .article-html-content h2,
 .article-html-content h3,
 .article-html-content h4 {
-  color: #f9fafb;
-  font-family: serif;
+  color: #0F172A;
+  font-family: inherit;
   font-weight: 700;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
@@ -246,16 +262,16 @@
   margin-bottom: 0.25rem;
 }
 .article-html-content blockquote {
-  border-left: 2px solid #c49a45;
+  border-left: 3px solid #C59B6D;
   padding-left: 1rem;
   font-style: italic;
-  color: #d1d5db;
+  color: #475569;
   margin: 0.75rem 0;
 }
 .article-html-content a {
-  color: #c49a45;
+  color: #C59B6D;
   text-decoration: underline;
 }
 .article-html-content a:hover {
-  color: #dfb96c;
+  color: #B08455;
 }

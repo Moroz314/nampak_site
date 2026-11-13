@@ -50,6 +50,8 @@ services:
       - ./main.py:/app/main.py
     expose:
       - "8000"
+    ports:
+      - "8008:8000"
 
   frontend:
     build:
@@ -58,10 +60,10 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    # Порт 80 публикуется только внутри сети Docker — Caddy обращается к нему напрямую.
-    # Снаружи трафик принимает только Caddy (порты 80/443).
     expose:
       - "80"
+    ports:
+      - "3000:80"
     volumes:
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 

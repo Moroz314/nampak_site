@@ -131,10 +131,10 @@ export default function AdminGallery() {
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-2 bg-orange-600 text-white text-sm font-semibold
-                       px-4 py-2.5 rounded-xl active:bg-orange-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-[#162330] hover:bg-[#1E2F40] text-white text-sm font-bold
+                       px-4 py-2.5 rounded-xl transition-colors shadow-xs"
           >
-            <Plus size={18} /> Добавить работу
+            <Plus size={18} className="text-[#C59B6D]" /> Добавить материал
           </button>
         </div>
 
@@ -148,13 +148,13 @@ export default function AdminGallery() {
         ) : items.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 p-8">
             <ImageIcon size={48} className="mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-700 font-semibold text-lg">В галерее пока нет работ</p>
+            <p className="text-gray-700 font-semibold text-lg">В галерее пока нет материалов</p>
             <p className="text-sm text-gray-400 mt-1 mb-5">
-              Нажмите «Добавить работу», чтобы загрузить первое фото или видео
+              Нажмите «Добавить материал», чтобы загрузить первое фото образца или видео производства
             </p>
             <button
               onClick={() => setModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-50 text-orange-700 font-semibold text-sm border border-orange-200"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FAF5EF] text-[#B08455] font-bold text-sm border border-[#E8D8C5]"
             >
               <Plus size={16} /> Добавить сейчас
             </button>
@@ -163,7 +163,7 @@ export default function AdminGallery() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map(item => {
               const ytEmbed = getYouTubeEmbedUrl(item.video_url)
-              const dateStr = new Date(item.created_at).toLocaleDateString('ru-RU', {
+              const dateStr = new Date(item.created_at || Date.now()).toLocaleDateString('ru-RU', {
                 day: 'numeric', month: 'short', year: 'numeric',
               })
 
@@ -189,7 +189,7 @@ export default function AdminGallery() {
                         />
                       ) : (
                         <div className="text-center p-4">
-                          <Video size={36} className="text-orange-400 mx-auto mb-2" />
+                          <Video size={36} className="text-[#C59B6D] mx-auto mb-2" />
                           <span className="text-xs text-gray-300 line-clamp-1 break-all">
                             {item.video_url}
                           </span>
@@ -224,7 +224,7 @@ export default function AdminGallery() {
                           href={item.video_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs text-orange-600 font-semibold inline-flex items-center gap-1 hover:underline"
+                          className="text-xs text-[#C59B6D] font-bold inline-flex items-center gap-1 hover:underline"
                         >
                           <ExternalLink size={13} /> Открыть ссылку
                         </a>
@@ -269,7 +269,7 @@ export default function AdminGallery() {
                       onClick={() => setMode('image')}
                       className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                         mode === 'image'
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] text-[#B08455]'
                           : 'border-gray-200 text-gray-600'
                       }`}
                     >
@@ -280,7 +280,7 @@ export default function AdminGallery() {
                       onClick={() => setMode('video')}
                       className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                         mode === 'video'
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          ? 'border-[#C59B6D] bg-[#FAF5EF] text-[#B08455]'
                           : 'border-gray-200 text-gray-600'
                       }`}
                     >
@@ -308,11 +308,11 @@ export default function AdminGallery() {
                     ) : (
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-gray-300 hover:border-orange-500 rounded-2xl p-8 text-center cursor-pointer transition-colors bg-gray-50"
+                        className="border-2 border-dashed border-gray-300 hover:border-[#C59B6D] rounded-2xl p-8 text-center cursor-pointer transition-colors bg-gray-50 hover:bg-[#FAF5EF]"
                       >
                         {uploading ? (
-                          <div className="flex flex-col items-center gap-2 text-orange-600">
-                            <span className="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full" />
+                          <div className="flex flex-col items-center gap-2 text-[#C59B6D]">
+                            <span className="animate-spin w-6 h-6 border-2 border-[#C59B6D] border-t-transparent rounded-full" />
                             <span className="text-sm font-semibold">Загрузка изображения...</span>
                           </div>
                         ) : (

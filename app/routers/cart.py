@@ -110,6 +110,9 @@ async def _build_cart(session_id: str, redis, db: AsyncSession) -> CartRead:
             price=product.price,
             image_url=product.image_url,
             subtotal=subtotal,
+            min_order_qty=getattr(product, "min_order_qty", 1) or 1,
+            dimensions_mm=getattr(product, "dimensions_mm", None),
+            material_specs=getattr(product, "material_specs", None),
         ))
 
     return CartRead(session_id=session_id, items=items, total=total)

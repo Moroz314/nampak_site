@@ -90,16 +90,17 @@ function SortableProductCard({
     zIndex: isDragging ? 40 : 'auto',
   }
 
-  const price = Number(product.price).toLocaleString('ru-RU', {
-    style: 'currency', currency: 'RUB', maximumFractionDigits: 0,
-  })
+  const priceNum = Number(product.price)
+  const price = !isNaN(priceNum)
+    ? `${priceNum.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`
+    : `${product.price} ₽`
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-2xl shadow-sm border transition-shadow ${
-        isDragging ? 'border-orange-500 shadow-lg' : 'border-gray-100'
+      className={`bg-white rounded-2xl shadow-xs border transition-shadow ${
+        isDragging ? 'border-[#C59B6D] shadow-lg' : 'border-gray-200/80'
       } overflow-hidden`}
     >
       <div className="flex items-center gap-2 p-3 sm:p-4">
@@ -107,7 +108,7 @@ function SortableProductCard({
         <div
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-700 active:text-orange-600 cursor-grab active:cursor-grabbing touch-none select-none rounded-lg"
+          className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-700 active:text-[#C59B6D] cursor-grab active:cursor-grabbing touch-none select-none rounded-lg"
           title="Перетащите мышью или пальцем для изменения порядка"
           aria-label="Перетащить товар"
         >
@@ -155,7 +156,7 @@ function SortableProductCard({
         </div>
 
         {/* Миниатюра */}
-        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center border border-gray-100">
           {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="w-full h-full object-cover pointer-events-none" />
           ) : (
@@ -165,22 +166,46 @@ function SortableProductCard({
 
         {/* Инфо */}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 mb-1">
+          <div className="font-bold text-[#162330] text-sm leading-snug line-clamp-1 mb-1">
             {product.name}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-base font-bold text-orange-600">{price}</span>
+            <span className="text-base font-extrabold text-[#162330]">{price}</span>
+            <span className="text-xs text-gray-400 font-medium">/ шт.</span>
+            {product.min_order_qty > 1 && (
+              <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">
+                от {product.min_order_qty} шт.
+              </span>
+            )}
+            {product.is_custom_design && (
+              <span className="text-[11px] bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5] px-2 py-0.5 rounded font-bold">
+                Логотип / под заказ
+              </span>
+            )}
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
               product.in_stock ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
             }`}>
               {product.in_stock ? 'В наличии' : 'Под заказ'}
             </span>
           </div>
-          {categoryName && (
-            <div className="text-xs text-gray-400 mt-0.5 truncate">
-              {categoryName}
-            </div>
-          )}
+
+          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1 flex-wrap">
+            {product.dimensions_mm && (
+              <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[11px]">
+                {product.dimensions_mm}
+              </span>
+            )}
+            {product.material_specs && (
+              <span className="text-gray-600 font-medium truncate max-w-[200px]">
+                {product.material_specs}
+              </span>
+            )}
+            {categoryName && (
+              <span className="text-gray-400">
+                • {categoryName}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -189,13 +214,13 @@ function SortableProductCard({
         <div className="flex border-t border-gray-100">
           <button onClick={() => onEdit(product)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3
-                       text-sm font-semibold text-blue-600 active:bg-blue-50 transition-colors">
-            <Pencil size={16} /> Изменить
+                       text-sm font-semibold text-slate-700 hover:text-[#162330] active:bg-slate-50 transition-colors">
+            <Pencil size={16} className="text-[#C59B6D]" /> Изменить
           </button>
           <div className="w-px bg-gray-100" />
           <button onClick={() => setConfirmDelete(true)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3
-                       text-sm font-semibold text-red-500 active:bg-red-50 transition-colors">
+                       text-sm font-semibold text-red-500 hover:text-red-700 active:bg-red-50 transition-colors">
             <Trash2 size={16} /> Удалить
           </button>
         </div>
@@ -223,19 +248,24 @@ function SortableProductCard({
    ══════════════════════════════════════════════════════════════ */
 const EMPTY_PRODUCT = {
   name: '', slug: '', price: '', description: '',
-  image_url: '', in_stock: true, category_id: '',
+  image_url: '', images: [], in_stock: true, category_id: '',
+  dimensions_mm: '', material_specs: '', min_order_qty: 1, is_custom_design: false,
 }
 
 function ProductModal({ product, categories, onClose, onSaved }) {
   const [form,    setForm]    = useState(product ? {
-    name:        product.name,
-    slug:        product.slug,
-    price:       String(product.price),
-    description: product.description ?? '',
-    image_url:   product.image_url ?? '',
-    images:      product.images?.length ? product.images.map(image => image.url) : (product.image_url ? [product.image_url] : []),
-    in_stock:    product.in_stock,
-    category_id: product.category_id ? String(product.category_id) : '',
+    name:             product.name,
+    slug:             product.slug,
+    price:            String(product.price ?? ''),
+    description:      product.description ?? '',
+    image_url:        product.image_url ?? '',
+    images:           product.images?.length ? product.images.map(image => image.url) : (product.image_url ? [product.image_url] : []),
+    in_stock:         product.in_stock,
+    category_id:      product.category_id ? String(product.category_id) : '',
+    dimensions_mm:    product.dimensions_mm ?? '',
+    material_specs:   product.material_specs ?? '',
+    min_order_qty:    product.min_order_qty ?? 1,
+    is_custom_design: Boolean(product.is_custom_design),
   } : { ...EMPTY_PRODUCT })
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
@@ -259,11 +289,15 @@ function ProductModal({ product, categories, onClose, onSaved }) {
       const isDescEmpty = !cleanDesc || cleanDesc === '<p><br></p>' || cleanDesc === '<p></p>'
       const payload = {
         ...form,
-        price:       parseFloat(form.price),
-        category_id: form.category_id ? parseInt(form.category_id) : null,
-        image_url:   form.image_url   || null,
-        images:      form.images,
-        description: isDescEmpty ? null : cleanDesc,
+        price:            parseFloat(form.price),
+        category_id:      form.category_id ? parseInt(form.category_id) : null,
+        image_url:        form.image_url   || null,
+        images:           form.images,
+        description:      isDescEmpty ? null : cleanDesc,
+        dimensions_mm:    form.dimensions_mm ? form.dimensions_mm.trim() : null,
+        material_specs:   form.material_specs ? form.material_specs.trim() : null,
+        min_order_qty:    Math.max(1, parseInt(form.min_order_qty) || 1),
+        is_custom_design: Boolean(form.is_custom_design),
       }
       if (product) {
         await adminApi.patch(`/admin/products/${product.id}`, payload)
@@ -283,7 +317,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
       {/* Шапка */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 z-10 bg-white">
         <h2 className="text-lg font-bold text-gray-900">
-          {product ? 'Редактировать товар' : 'Новый товар'}
+          {product ? 'Редактировать товар' : 'Новый товар НАМПАК'}
         </h2>
         <button onClick={onClose} className="p-2 -mr-2 text-gray-400 active:text-gray-700">
           <X size={24} />
@@ -301,28 +335,79 @@ function ProductModal({ product, categories, onClose, onSaved }) {
 
         {/* Название */}
         <div className="admin-field">
-          <label className="admin-label">Название *</label>
+          <label className="admin-label">Название товара *</label>
           <input className="admin-input" required
             value={form.name} onChange={e => handleNameChange(e.target.value)}
-            placeholder="Кошелёк «Берсерк»" />
+            placeholder="Короб самосборный 220×165×100 Т-23 ТИП Д" />
         </div>
 
         {/* Slug */}
         <div className="admin-field">
-          <label className="admin-label">Slug *</label>
+          <label className="admin-label">Slug (URL) *</label>
           <input className="admin-input font-mono text-sm" required
             value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
-            placeholder="koshelek-berserk" />
+            placeholder="korob-samosbornyj-220-165-100" />
           <p className="text-xs text-gray-400 mt-1">Только латиница, цифры и дефис</p>
         </div>
 
-        {/* Цена */}
-        <div className="admin-field">
-          <label className="admin-label">Цена (₽) *</label>
-          <input className="admin-input text-xl font-bold" required type="number"
-            min="1" step="0.01"
-            value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-            placeholder="2490" />
+        {/* Специфика упаковки: Размеры и Материал */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="admin-field">
+            <label className="admin-label">Размеры (Д×Ш×В мм или рулон)</label>
+            <input className="admin-input font-mono text-sm"
+              value={form.dimensions_mm} onChange={e => setForm(f => ({ ...f, dimensions_mm: e.target.value }))}
+              placeholder="220×165×100 мм" />
+            <p className="text-xs text-gray-400 mt-1">например: 220×165×100 мм или 48 мм × 50 м</p>
+          </div>
+
+          <div className="admin-field">
+            <label className="admin-label">Марка / Материал / Толщина</label>
+            <input className="admin-input"
+              value={form.material_specs} onChange={e => setForm(f => ({ ...f, material_specs: e.target.value }))}
+              placeholder="Т-23 ТИП Д, 40 мкм, Термо ЭКО" />
+            <p className="text-xs text-gray-400 mt-1">например: Т-23, ПВД 60 мкм, БОПП 25 мкм</p>
+          </div>
+        </div>
+
+        {/* Мин. тираж и Цена */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="admin-field">
+            <label className="admin-label">Мин. партия (шт.) *</label>
+            <input className="admin-input text-lg font-bold" type="number" min="1" required
+              value={form.min_order_qty} onChange={e => setForm(f => ({ ...f, min_order_qty: e.target.value }))}
+              placeholder="1" />
+            <p className="text-xs text-gray-400 mt-1">Например: 13500 для коробок или 1 для скотча</p>
+          </div>
+
+          <div className="admin-field">
+            <label className="admin-label">Цена за 1 шт. (₽) *</label>
+            <input className="admin-input text-xl font-bold" required type="number"
+              min="0" step="0.01"
+              value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
+              placeholder="10.50" />
+            <p className="text-xs text-gray-400 mt-1">С точностью до копеек, например: 10.50 или 1.09</p>
+          </div>
+        </div>
+
+        {/* Возможность нанесения логотипа / под заказ */}
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+          <div>
+            <span className="font-bold text-sm text-[#162330] block">Возможно нанесение логотипа / изготовление под заказ</span>
+            <p className="text-xs text-slate-500 mt-0.5">
+              В карточке товара появится бейдж «Возможна печать логотипа» и форма спецзаказа
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setForm(f => ({ ...f, is_custom_design: !f.is_custom_design }))}
+            className={`relative w-13 h-7 rounded-full transition-colors duration-200 ml-4 shrink-0 ${
+              form.is_custom_design ? 'bg-[#C59B6D]' : 'bg-slate-300'
+            }`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+              form.is_custom_design ? 'translate-x-6' : 'translate-x-0'
+            }`} />
+          </button>
         </div>
 
         {/* Категория */}
@@ -345,7 +430,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
 
         {/* Описание */}
         <div className="admin-field">
-          <label className="admin-label">Описание изделия (HTML-редактор)</label>
+          <label className="admin-label">Описание товара (HTML-редактор)</label>
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden text-gray-900">
             <ReactQuill
               theme="snow"
@@ -353,7 +438,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
               value={form.description}
               onChange={val => setForm(f => ({ ...f, description: val }))}
               modules={QUILL_MODULES}
-              placeholder="Подробное описание изделия, характеристики, материалы..."
+              placeholder="Подробное описание товара, характеристики, назначение, упаковка..."
             />
           </div>
         </div>
@@ -441,7 +526,7 @@ function SortableCategoryCard({
       ref={setNodeRef}
       style={style}
       className={`bg-white rounded-xl border transition-shadow ${
-        isDragging ? 'border-orange-500 shadow-lg' : 'border-gray-100'
+        isDragging ? 'border-[#C59B6D] shadow-lg' : 'border-gray-100'
       } overflow-hidden`}
     >
       {isEditing ? (
@@ -471,10 +556,10 @@ function SortableCategoryCard({
                 type="button"
                 onClick={() => editFileInputRef.current?.click()}
                 disabled={uploadingEdit}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 text-xs text-gray-600 hover:border-orange-500 hover:text-orange-600"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 text-xs text-gray-600 hover:border-[#C59B6D] hover:text-[#162330]"
               >
                 {uploadingEdit ? (
-                  <span className="animate-spin w-3 h-3 border-2 border-orange-500 border-t-transparent rounded-full" />
+                  <span className="animate-spin w-3 h-3 border-2 border-[#C59B6D] border-t-transparent rounded-full" />
                 ) : (
                   <Upload size={14} />
                 )}
@@ -508,7 +593,7 @@ function SortableCategoryCard({
           <div
             {...attributes}
             {...listeners}
-            className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-700 active:text-orange-600 cursor-grab active:cursor-grabbing touch-none select-none rounded-lg"
+            className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-700 active:text-[#C59B6D] cursor-grab active:cursor-grabbing touch-none select-none rounded-lg"
             title="Перетащите для изменения порядка кнопок категорий в каталоге"
             aria-label="Перетащить категорию"
           >
@@ -872,10 +957,10 @@ function CategoriesTab() {
                 type="button"
                 onClick={() => newFileInputRef.current?.click()}
                 disabled={uploadingNew}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-300 text-gray-600 text-sm hover:border-orange-500 hover:text-orange-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-300 text-gray-600 text-sm hover:border-[#C59B6D] hover:text-[#162330] transition-colors"
               >
                 {uploadingNew ? (
-                  <span className="animate-spin w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full" />
+                  <span className="animate-spin w-4 h-4 border-2 border-[#C59B6D] border-t-transparent rounded-full" />
                 ) : (
                   <Upload size={16} />
                 )}
@@ -1106,9 +1191,9 @@ function ProductsTab() {
           </p>
         </div>
         <button onClick={() => setModal('new')}
-          className="flex items-center gap-2 bg-orange-600 text-white text-sm font-semibold
-                     px-4 py-2.5 rounded-xl active:bg-orange-700 transition-colors flex-shrink-0">
-          <Plus size={18} /> Создать товар
+          className="flex items-center gap-2 bg-[#162330] hover:bg-[#1E2F40] text-white text-sm font-bold
+                     px-4 py-2.5 rounded-xl shadow-xs transition-colors flex-shrink-0">
+          <Plus size={18} className="text-[#C59B6D]" /> Создать товар
         </button>
       </div>
 
@@ -1150,7 +1235,7 @@ function ProductsTab() {
               Настройка порядка по категориям:
             </span>
             {selectedCategoryId !== 'all' && (
-              <span className="text-[11px] text-orange-600 font-medium">
+              <span className="text-[11px] text-[#B08455] font-semibold">
                 Порядок уникален внутри выбранной категории
               </span>
             )}
@@ -1159,10 +1244,10 @@ function ProductsTab() {
             <button
               type="button"
               onClick={() => setSelectedCategoryId('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                 selectedCategoryId === 'all'
-                  ? 'bg-orange-600 text-white shadow-sm'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
+                  ? 'bg-[#162330] text-white shadow-xs'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#C59B6D]'
               }`}
             >
               Все ({products.length})
@@ -1174,10 +1259,10 @@ function ProductsTab() {
                   key={c.id}
                   type="button"
                   onClick={() => setSelectedCategoryId(c.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                     selectedCategoryId === c.id
-                      ? 'bg-orange-600 text-white shadow-sm'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
+                      ? 'bg-[#162330] text-white shadow-xs'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-[#C59B6D]'
                   }`}
                 >
                   {c.name} ({count})
@@ -1188,10 +1273,10 @@ function ProductsTab() {
               <button
                 type="button"
                 onClick={() => setSelectedCategoryId('none')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                   selectedCategoryId === 'none'
-                    ? 'bg-orange-600 text-white shadow-sm'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
+                    ? 'bg-[#162330] text-white shadow-xs'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-[#C59B6D]'
                 }`}
               >
                 Без категории ({products.filter(p => !p.category_id).length})
@@ -1265,23 +1350,23 @@ export default function AdminProducts() {
       <div className="flex border-b border-gray-200 bg-white sticky top-0 z-20">
         <button
           onClick={() => setTab('products')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold
                       border-b-2 transition-all duration-150
                       ${tab === 'products'
-                        ? 'border-orange-500 text-orange-600 bg-orange-50/50'
-                        : 'border-transparent text-gray-500'}`}
+                        ? 'border-[#C59B6D] text-[#162330] bg-[#FAF5EF]'
+                        : 'border-transparent text-gray-500 hover:text-[#162330]'}`}
         >
-          <Package size={17} /> Товары
+          <Package size={17} className={tab === 'products' ? 'text-[#C59B6D]' : ''} /> Товары
         </button>
         <button
           onClick={() => setTab('categories')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold
+          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold
                       border-b-2 transition-all duration-150
                       ${tab === 'categories'
-                        ? 'border-orange-500 text-orange-600 bg-orange-50/50'
-                        : 'border-transparent text-gray-500'}`}
+                        ? 'border-[#C59B6D] text-[#162330] bg-[#FAF5EF]'
+                        : 'border-transparent text-gray-500 hover:text-[#162330]'}`}
         >
-          <Tag size={17} /> Категории
+          <Tag size={17} className={tab === 'categories' ? 'text-[#C59B6D]' : ''} /> Категории
         </button>
       </div>
 

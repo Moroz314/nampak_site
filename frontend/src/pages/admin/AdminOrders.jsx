@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Phone,
   Clock,
@@ -6,34 +6,46 @@ import {
   MapPin,
   Truck,
   Mail,
-  ExternalLink,
-  Printer,
-  RefreshCw,
-  PackageCheck,
+  Building2,
+  FileText,
+  Search,
+  CheckCircle2,
   AlertCircle,
+  Package,
+  Calendar,
 } from 'lucide-react'
 import AdminLayout from '../../components/admin/AdminLayout'
 import { adminApi } from '../../api/axios'
 
+/* ── Конфигурация статусов менеджера ───────────────────────────────────────── */
 const STATUS_CONFIG = {
-  pending:       { label: 'Новый',           color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  paid:          { label: 'Оплачен',         color: 'bg-blue-100 text-blue-800 border-blue-200'       },
-  in_production: { label: 'В изготовлении',   color: 'bg-purple-100 text-purple-800 border-purple-200' },
-  shipped:       { label: 'Отправлен',       color: 'bg-green-100 text-green-800 border-green-200'    },
-  cancelled:     { label: 'Отменён',         color: 'bg-red-100 text-red-800 border-red-200'          },
+  pending:       { label: 'Новая заявка',              color: 'bg-amber-100 text-amber-900 border-amber-300'    },
+  confirmed:     { label: 'Подтверждён / Счёт выставлен', color: 'bg-blue-100 text-blue-900 border-blue-300'       },
+  in_production: { label: 'В производстве / Комплектуется', color: 'bg-purple-100 text-purple-900 border-purple-300' },
+  shipped:       { label: 'Отгружен / В пути',          color: 'bg-indigo-100 text-indigo-900 border-indigo-300' },
+  completed:     { label: 'Завершён',                  color: 'bg-emerald-100 text-emerald-900 border-emerald-300' },
+  cancelled:     { label: 'Отменён',                   color: 'bg-rose-100 text-rose-900 border-rose-300'       },
 }
 
-/* Допустимые переходы статуса */
+/* ── Допустимые переходы статусов для менеджера ───────────────────────────── */
 const NEXT_STATUSES = {
-  pending:       ['paid', 'in_production', 'cancelled'],
-  paid:          ['in_production', 'shipped', 'cancelled'],
+  pending:       ['confirmed', 'cancelled'],
+  confirmed:     ['in_production', 'shipped', 'cancelled'],
   in_production: ['shipped', 'cancelled'],
-  shipped:       [],
+  shipped:       ['completed', 'cancelled'],
+  completed:     [],
   cancelled:     [],
 }
 
+/* ── Названия способов доставки ───────────────────────────────────────────── */
+const DELIVERY_LABELS = {
+  pickup:      'Самовывоз со склада (СПб)',
+  delivery:    'Доставка ТК / по России',
+  custom_calc: 'Индивидуальный расчёт доставки',
+}
+
 /* ══════════════════════════════════════════════════════════════
-   КАРТОЧКА ЗАКАЗА
+   КАРТОЧКА ЗАКАЗА / ЗАЯВКИ
    ══════════════════════════════════════════════════════════════ */
 function OrderCard({ order, onOrderUpdated }) {
   const [loading, setLoading] = useState(false)
@@ -41,12 +53,13 @@ function OrderCard({ order, onOrderUpdated }) {
   const cfg   = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending
   const nexts = NEXT_STATUSES[order.status] || []
 
-  const total = Number(order.total_amount).toLocaleString('ru-RU', {
-    style: 'currency', currency: 'RUB', maximumFractionDigits: 0,
-  })
+  const totalNum = Number(order.total_amount)
+  const total = !isNaN(totalNum)
+    ? `${totalNum.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`
+    : `${order.total_amount} ₽`
 
   const date = new Date(order.created_at).toLocaleString('ru-RU', {
-    day: '2-digit', month: '2-digit', year: '2-digit',
+    day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
 
@@ -62,273 +75,181 @@ function OrderCard({ order, onOrderUpdated }) {
     }
   }
 
-  const handleCreateCdek = async () => {
-    setLoading(true)
-    try {
-      const { data } = await adminApi.post(`/admin/orders/${order.id}/create-cdek`)
-      onOrderUpdated(data)
-      alert(data.cdek_number ? `Заказ успешно оформлен в СДЭК! Трек-номер: ${data.cdek_number}` : 'Заказ отправлен в СДЭК на обработку.')
-    } catch (err) {
-      alert(err.response?.data?.detail ?? 'Ошибка при обращении к СДЭК')
-      // Обновляем заказ чтобы отобразилась ошибка cdek_error
-      try {
-        const { data: refreshed } = await adminApi.get(`/admin/orders/${order.id}`)
-        onOrderUpdated(refreshed)
-      } catch { /* ignore */ }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handlePrintCdek = async () => {
-    try {
-      const { data } = await adminApi.get(`/admin/orders/${order.id}/cdek-print`)
-      if (data.print_url) {
-        window.open(data.print_url, '_blank')
-      } else {
-        alert('Ссылка на печать еще не готова, попробуйте через несколько секунд')
-      }
-    } catch (err) {
-      alert(err.response?.data?.detail ?? 'Не удалось получить квитанцию СДЭК')
-    }
-  }
-
-  const handleRefreshCdek = async () => {
-    setLoading(true)
-    try {
-      const { data } = await adminApi.post(`/admin/orders/${order.id}/cdek-refresh`)
-      onOrderUpdated(data)
-    } catch (err) {
-      alert(err.response?.data?.detail ?? 'Ошибка обновления данных СДЭК')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const deliveryLabel = DELIVERY_LABELS[order.delivery_type] || order.delivery_type || 'Доставка'
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-5">
-        {/* Шапка карточки */}
-        <div className="flex items-start justify-between gap-2 mb-3">
+    <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden transition-shadow hover:shadow-md">
+      
+      {/* ── Шапка карточки ───────────────────────────────────── */}
+      <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs text-gray-400 font-mono mb-0.5">{order.order_id}</div>
-            <div className="text-lg font-bold text-gray-900">{order.guest_name}</div>
-          </div>
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full border flex-shrink-0 ${cfg.color}`}>
-            {cfg.label}
-          </span>
-        </div>
-
-        {/* Контакты: Телефон и Email */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
-          <a
-            href={`tel:${order.guest_phone}`}
-            className="flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline transition-opacity"
-          >
-            <Phone size={15} />
-            {order.guest_phone}
-          </a>
-          {order.guest_email && (
-            <a
-              href={`mailto:${order.guest_email}`}
-              className="flex items-center gap-1.5 text-gray-500 text-xs hover:text-gray-700"
-            >
-              <Mail size={13} />
-              {order.guest_email}
-            </a>
-          )}
-        </div>
-
-        {/* ── ТОВАРЫ В ЗАКАЗЕ ──────── */}
-        <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3.5 mb-3.5">
-          <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-amber-200/50">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
-              <ShoppingBag size={14} className="text-amber-700" />
-              Товары в заказе ({order.items?.length ?? 0} шт.)
-            </span>
-          </div>
-
-          {order.items && order.items.length > 0 ? (
-            <div className="space-y-2.5 divide-y divide-amber-200/40">
-              {order.items.map(item => (
-                <div key={item.id} className="pt-2 first:pt-0 flex items-center justify-between text-sm">
-                  <div className="flex-1 min-w-0 pr-3">
-                    <span className="text-gray-900 font-bold block leading-snug">
-                      {item.product_name}
-                    </span>
-                    <span className="text-xs text-gray-500 font-medium">
-                      {Number(item.product_price).toLocaleString('ru-RU')} ₽ / шт.
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="bg-amber-100 text-amber-900 text-xs font-extrabold px-2 py-0.5 rounded border border-amber-300">
-                      ×{item.quantity}
-                    </span>
-                    <span className="text-gray-900 font-bold text-sm">
-                      {Number(item.product_price * item.quantity).toLocaleString('ru-RU')} ₽
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono font-black text-sm text-[#162330]">
+                {order.order_id}
+              </span>
+              <span className="text-slate-400 text-xs">•</span>
+              <span className="text-xs text-slate-500 flex items-center gap-1">
+                <Clock size={13} className="text-slate-400" />
+                {date}
+              </span>
             </div>
-          ) : (
-            <div className="text-xs text-gray-400 italic py-1">
-              Информация о товарах не найдена
-            </div>
-          )}
-        </div>
 
-        {/* Доставка СДЭК и адрес */}
-        <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-4 text-xs space-y-2">
-          <div className="flex items-start gap-1.5 text-gray-800">
-            <MapPin size={14} className="text-orange-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{order.delivery_address}</div>
-              {order.pvz_code && (
-                <div className="text-[11px] text-gray-500 font-mono mt-0.5">
-                  Код ПВЗ СДЭК: <span className="font-bold text-orange-600">{order.pvz_code}</span>
-                </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg font-bold text-slate-900">{order.guest_name}</span>
+              {order.company_name && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5]">
+                  <Building2 size={12} />
+                  {order.company_name}
+                </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-gray-500 pt-1.5 border-t border-gray-200/50">
-            <span className="flex items-center gap-1 font-medium">
-              <Truck size={13} className="text-gray-600" />
-              Доставка СДЭК: {Number(order.delivery_cost || 0).toLocaleString('ru-RU')} ₽
-            </span>
-            <span className="uppercase font-semibold text-[10px] px-2 py-0.5 bg-gray-200 text-gray-700 rounded">
-              {order.payment_method === 'sbp' ? 'СБП' : 'Банковская карта'}
-            </span>
-          </div>
-
-          {/* Отображение статуса СДЭК и номера накладной */}
-          {order.cdek_number && (
-            <div className="mt-2 pt-2 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-700">№ СДЭК:</span>
-                <a
-                  href={`https://www.cdek.ru/ru/tracking?order_id=${order.cdek_number}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono font-bold text-orange-600 hover:underline flex items-center gap-1"
-                >
-                  {order.cdek_number} <ExternalLink size={12} />
-                </a>
-                {order.cdek_status && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    {order.cdek_status}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handlePrintCdek}
-                  className="px-2.5 py-1 text-[11px] font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1 shadow-2xs"
-                >
-                  <Printer size={12} /> Квитанция
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRefreshCdek}
-                  disabled={loading}
-                  title="Обновить статус СДЭК"
-                  className="p-1 text-gray-500 hover:text-gray-800 rounded-lg border border-gray-200 hover:bg-gray-50"
-                >
-                  <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Ошибка СДЭК */}
-          {order.cdek_error && (
-            <div className="mt-2 p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-1.5">
-                  <AlertCircle size={14} className="text-red-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold">Ошибка СДЭК:</span> {order.cdek_error}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCreateCdek}
-                  disabled={loading}
-                  className="shrink-0 px-2.5 py-1 bg-red-600 text-white font-bold rounded text-[11px] hover:bg-red-700 transition"
-                >
-                  {loading ? '...' : 'Повторить'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {order.comment && (
-            <div className="text-gray-600 italic pt-1.5 border-t border-gray-200/50">
-              «{order.comment}»
-            </div>
-          )}
+          {/* Бейдж статуса */}
+          <span className={`text-xs font-bold px-3 py-1.5 rounded-full border shadow-2xs ${cfg.color}`}>
+            {cfg.label}
+          </span>
         </div>
 
-        {/* Дата и Общий итог */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <Clock size={14} />
-            {date}
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-bold text-gray-400 block -mb-1">
-              Итого к оплате
-            </span>
-            <span className="text-2xl font-black text-gray-900">{total}</span>
+        {/* Контакты клиента */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 pt-3 border-t border-slate-200/60">
+          <a
+            href={`tel:${order.guest_phone.replace(/\D/g, '')}`}
+            className="flex items-center gap-1.5 text-xs font-bold text-[#162330] hover:text-[#C59B6D] transition-colors"
+          >
+            <Phone size={14} className="text-[#C59B6D]" />
+            <span>{order.guest_phone}</span>
+          </a>
+
+          {order.guest_email && (
+            <a
+              href={`mailto:${order.guest_email}`}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#162330] transition-colors"
+            >
+              <Mail size={14} className="text-slate-400" />
+              <span>{order.guest_email}</span>
+            </a>
+          )}
+
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+            <Truck size={14} className="text-slate-400" />
+            <span>{deliveryLabel}</span>
           </div>
         </div>
       </div>
 
-      {/* Кнопка «Готово к отправке» для товаров в изготовлении */}
-      {order.status === 'in_production' && (
-        <div className="px-5 pb-3">
-          <button
-            type="button"
-            onClick={handleCreateCdek}
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center justify-center gap-2 transition active:scale-98 disabled:opacity-50"
-          >
-            <PackageCheck size={16} />
-            {loading ? 'Регистрация в СДЭК...' : '📦 Готово к отправке (оформить СДЭК)'}
-          </button>
-        </div>
-      )}
+      <div className="p-5 space-y-4">
+        
+        {/* Адрес доставки или склад */}
+        {order.delivery_address && (
+          <div className="flex items-start gap-2 bg-[#F8FAFC] p-3 rounded-xl border border-slate-200/60 text-xs">
+            <MapPin size={15} className="text-[#C59B6D] shrink-0 mt-0.5" />
+            <div>
+              <span className="text-slate-400 uppercase font-bold tracking-wider text-[10px] block">
+                Адрес / Город назначения:
+              </span>
+              <span className="text-slate-800 font-semibold">{order.delivery_address}</span>
+            </div>
+          </div>
+        )}
 
-      {/* Кнопка создания заказа СДЭК для оплаченных заказов без трек-номера */}
-      {order.status === 'paid' && !order.cdek_number && (
-        <div className="px-5 pb-3">
-          <button
-            type="button"
-            onClick={handleCreateCdek}
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center justify-center gap-2 transition active:scale-98 disabled:opacity-50"
-          >
-            <Truck size={16} />
-            {loading ? 'Создание в СДЭК...' : '🚚 Создать заказ в СДЭК'}
-          </button>
-        </div>
-      )}
+        {/* Комментарий клиента */}
+        {order.client_comment && (
+          <div className="flex items-start gap-2 bg-amber-50/60 border border-amber-200/70 p-3 rounded-xl text-xs text-amber-950">
+            <FileText size={15} className="text-amber-700 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold uppercase tracking-wider text-[10px] text-amber-800 block">
+                Комментарий к заявке:
+              </span>
+              <span className="leading-relaxed">{order.client_comment}</span>
+            </div>
+          </div>
+        )}
 
-      {/* Кнопки смены статуса */}
+        {/* ── ТОВАРЫ В ЗАЯВКЕ ─────────────────────────────────── */}
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-700">
+            <span className="flex items-center gap-1.5">
+              <Package size={14} className="text-[#C59B6D]" />
+              Позиции заявки ({order.items?.length ?? 0})
+            </span>
+            <span>Кол-во / Сумма</span>
+          </div>
+
+          {order.items && order.items.length > 0 ? (
+            <div className="divide-y divide-slate-100">
+              {order.items.map(item => {
+                const itemPriceNum = Number(item.product_price)
+                const priceFormatted = !isNaN(itemPriceNum)
+                  ? `${itemPriceNum.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`
+                  : `${item.product_price} ₽`
+
+                const rowSum = itemPriceNum * item.quantity
+                const rowSumFormatted = !isNaN(rowSum)
+                  ? `${rowSum.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`
+                  : ''
+
+                return (
+                  <div key={item.id} className="p-3.5 flex items-center justify-between gap-4 text-xs">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-[#162330] leading-snug line-clamp-2">
+                        {item.product_name}
+                      </div>
+                      <div className="text-slate-500 font-medium mt-0.5">
+                        {priceFormatted} / шт.
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[11px] inline-block mb-0.5">
+                        × {item.quantity.toLocaleString('ru-RU')} шт.
+                      </div>
+                      <div className="font-bold text-[#162330] text-sm">
+                        {rowSumFormatted}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="p-4 text-xs text-slate-400 italic text-center">
+              Позиции не указаны
+            </div>
+          )}
+
+          {/* Итог */}
+          <div className="bg-slate-50/70 p-3.5 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Предварительная сумма партии:
+            </span>
+            <span className="text-lg font-black text-[#162330]">
+              {total}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Кнопки перевода статуса ───────────────────────────── */}
       {nexts.length > 0 && (
-        <div className="flex gap-2 px-5 pb-4 pt-1 border-t border-gray-50 flex-wrap">
-          {nexts.map(s => {
-            const c = STATUS_CONFIG[s]
+        <div className="bg-slate-50/50 p-4 border-t border-slate-100 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 mr-1">Действие менеджера:</span>
+          {nexts.map(statusKey => {
+            const nextCfg = STATUS_CONFIG[statusKey]
+            const isCancel = statusKey === 'cancelled'
             return (
               <button
-                key={s}
-                onClick={() => handleStatus(s)}
+                key={statusKey}
+                onClick={() => handleStatus(statusKey)}
                 disabled={loading}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 disabled:opacity-50 ${c.color}`}
+                className={`py-2 px-3.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50 ${
+                  isCancel
+                    ? 'border border-rose-200 bg-white text-rose-600 hover:bg-rose-50'
+                    : 'bg-[#162330] hover:bg-[#1E2F40] text-white shadow-xs'
+                }`}
               >
-                {loading ? '...' : `→ ${c.label}`}
+                {loading ? '...' : `→ ${nextCfg.label}`}
               </button>
             )
           })}
@@ -339,38 +260,12 @@ function OrderCard({ order, onOrderUpdated }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ФИЛЬТР СТАТУСОВ
-   ══════════════════════════════════════════════════════════════ */
-function StatusFilter({ active, onChange }) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-      <button
-        onClick={() => onChange(null)}
-        className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors
-                    ${active === null ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-      >
-        Все заказы
-      </button>
-      {Object.entries(STATUS_CONFIG).map(([key, { label, color }]) => (
-        <button
-          key={key}
-          onClick={() => onChange(key)}
-          className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all
-                      ${active === key ? color + ' border-current' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/* ══════════════════════════════════════════════════════════════
-   MAIN PAGE
+   ГЛАВНАЯ СТРАНИЦА ЗАЯВОК В АДМИНКЕ
    ══════════════════════════════════════════════════════════════ */
 export default function AdminOrders() {
   const [orders,       setOrders]       = useState([])
   const [statusFilter, setStatusFilter] = useState(null)
+  const [searchQuery,  setSearchQuery]  = useState('')
   const [loading,      setLoading]      = useState(true)
 
   const load = useCallback(async () => {
@@ -379,8 +274,11 @@ export default function AdminOrders() {
       const params = statusFilter ? { status: statusFilter } : {}
       const { data } = await adminApi.get('/admin/orders/', { params })
       setOrders(data)
-    } catch { /* 401 handled */ }
-    finally { setLoading(false) }
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false)
+    }
   }, [statusFilter])
 
   useEffect(() => { load() }, [load])
@@ -391,27 +289,97 @@ export default function AdminOrders() {
     ))
   }
 
+  /* Фильтрация по поисковой строке */
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery.trim()) return orders
+    const q = searchQuery.toLowerCase().trim()
+    return orders.filter(o =>
+      (o.order_id && o.order_id.toLowerCase().includes(q)) ||
+      (o.guest_name && o.guest_name.toLowerCase().includes(q)) ||
+      (o.guest_phone && o.guest_phone.toLowerCase().includes(q)) ||
+      (o.company_name && o.company_name.toLowerCase().includes(q)) ||
+      (o.guest_email && o.guest_email.toLowerCase().includes(q))
+    )
+  }, [orders, searchQuery])
+
   return (
     <AdminLayout>
-      <div className="px-4 py-4 max-w-5xl mx-auto">
-        <h1 className="text-xl font-bold text-gray-900 mb-4">Управление заказами</h1>
+      <div className="px-4 py-6 max-w-6xl mx-auto">
+        
+        {/* Заголовок */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-black text-[#162330] tracking-tight">
+              Заявки и заказы {!loading && <span className="text-slate-400 font-normal text-lg">({orders.length})</span>}
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Управление входящими B2B и B2C заявками, выставление счетов и контроль отгрузок
+            </p>
+          </div>
 
-        <div className="mb-4">
-          <StatusFilter active={statusFilter} onChange={setStatusFilter} />
+          {/* Быстрый поиск */}
+          <div className="relative w-full sm:w-72">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Поиск по номеру, имени, ИНН..."
+              className="w-full pl-9 pr-4 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-900 focus:border-[#C59B6D] focus:ring-2 focus:ring-[#C59B6D]/20 outline-none transition-all"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
 
+        {/* Фильтр по статусам */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
+          <button
+            onClick={() => setStatusFilter(null)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              statusFilter === null
+                ? 'bg-[#162330] text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            Все заявки ({orders.length})
+          </button>
+          {Object.entries(STATUS_CONFIG).map(([key, { label }]) => {
+            const count = orders.filter(o => o.status === key).length
+            return (
+              <button
+                key={key}
+                onClick={() => setStatusFilter(key)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                  statusFilter === key
+                    ? 'bg-[#162330] text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                {label} {count > 0 && `(${count})`}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Список заявок */}
         {loading ? (
-          <div className="space-y-3">
-            {[1,2,3].map(i => <div key={i} className="bg-white rounded-2xl h-44 animate-pulse" />)}
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-2xl h-48 border border-slate-100 animate-pulse" />
+            ))}
           </div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 bg-white rounded-2xl border border-gray-100">
-            <ShoppingBag size={48} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Заказов нет</p>
+        ) : filteredOrders.length === 0 ? (
+          <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/80">
+            <ShoppingBag className="w-14 h-14 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-800 mb-1">
+              {searchQuery ? 'Заявок по запросу не найдено' : 'Заявок пока нет'}
+            </h3>
+            <p className="text-xs text-slate-500">
+              {searchQuery ? 'Попробуйте изменить параметры поиска' : 'Новые заявки с сайта появятся здесь'}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map(order => (
+            {filteredOrders.map(order => (
               <OrderCard
                 key={order.id}
                 order={order}
@@ -420,6 +388,7 @@ export default function AdminOrders() {
             ))}
           </div>
         )}
+
       </div>
     </AdminLayout>
   )

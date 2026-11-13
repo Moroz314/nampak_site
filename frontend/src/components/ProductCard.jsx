@@ -3,11 +3,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { addToCart, selectAdding, selectSessionId } from '../store/cartSlice'
 
-/* ── SVG placeholder ─────────────────────────────────────────────────────── */
 const ImagePlaceholder = ({ name }) => (
-  <div className="absolute inset-0 flex flex-col items-center justify-center bg-forge-surface/80 gap-3">
+  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-      strokeWidth={0.8} stroke="currentColor" className="w-10 h-10 text-forge-primary/20">
+      strokeWidth={1} stroke="currentColor" className="w-12 h-12 text-slate-300">
       <path strokeLinecap="round" strokeLinejoin="round"
         d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5
            1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5
@@ -15,8 +14,8 @@ const ImagePlaceholder = ({ name }) => (
            1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375
            0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
     </svg>
-    <span className="text-forge-primary/20 font-body text-[10px] tracking-[0.2em] uppercase px-4 text-center">
-      {name.slice(0, 20)}
+    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 text-center">
+      НАМПАК
     </span>
   </div>
 )
@@ -39,134 +38,143 @@ export default function ProductCard({ product }) {
   const [added,    setAdded]    = useState(false)
   const [imgError, setImgError] = useState(false)
 
-  const price = Number(product.price).toLocaleString('ru-RU', {
-    style: 'currency', currency: 'RUB', maximumFractionDigits: 0,
-  })
+  const numPrice = Number(product.price || 0)
+  // Если цена целая — без копеек, если с копейками — ровно 2 знака
+  const priceFormatted = numPrice.toLocaleString('ru-RU', {
+    minimumFractionDigits: numPrice % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }) + ' ₽'
 
-  const handleAdd = async () => {
+  const minQty = product.min_order_qty || 1
+
+  const handleAdd = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (isAdding) return
-    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: 1 }))
+    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: minQty }))
     if (addToCart.fulfilled.match(result)) {
       setAdded(true)
-      setTimeout(() => setAdded(false), 2200)
+      setTimeout(() => setAdded(false), 2000)
     }
   }
 
   return (
     <article
-      className="
-        group relative flex flex-col
-        bg-forge-surface border border-forge-border
-        transition-all duration-400 ease-out
-        hover:border-forge-primary/50 hover:shadow-gold hover:-translate-y-0.5
-      "
+      className="group relative flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden
+                 transition-all duration-200 hover:border-[#C59B6D] hover:shadow-brand hover:-translate-y-1"
       aria-label={`Товар: ${product.name}`}
     >
       {/* ── Изображение ───────────────────────────────────────── */}
-      <Link to={`/product/${product.slug}`} className="relative block w-full aspect-[4/3] overflow-hidden bg-forge-bg flex-shrink-0">
+      <Link
+        to={`/product/${product.slug}`}
+        className="relative block w-full aspect-[4/3] overflow-hidden bg-slate-50 flex-shrink-0"
+      >
         {product.image_url && !imgError ? (
           <img
             src={product.image_url}
             alt={product.name}
             onError={() => setImgError(true)}
-            className="absolute inset-0 w-full h-full object-cover
-                       transition-transform duration-700 group-hover:scale-[1.04]"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <ImagePlaceholder name={product.name} />
         )}
 
-        {/* Затемнение снизу */}
-        <div className="absolute inset-0 bg-gradient-to-t
-                        from-forge-surface/80 via-transparent to-transparent
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Бейджи поверх фото */}
+        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1 pointer-events-none">
+          {product.is_custom_design ? (
+            <span className="bg-[#162330] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+              Печать лого
+            </span>
+          ) : <span />}
 
-        {/* Бейдж «Под заказ» */}
-        {!product.in_stock && (
-          <div className="absolute top-3 right-3 z-10
-                          bg-forge-bg/90 border border-forge-border
-                          px-2.5 py-1 text-[10px] tracking-[0.2em] uppercase
-                          text-forge-muted font-body">
-            Под заказ
-          </div>
-        )}
-
-        {/* Золотая полоска сверху при hover */}
-        <div className="absolute top-0 left-0 right-0 h-0.5
-                        bg-forge-primary scale-x-0 group-hover:scale-x-100
-                        transition-transform duration-300 origin-left" />
+          {!product.in_stock && (
+            <span className="bg-amber-100 text-amber-800 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-amber-200 shadow-xs">
+              Под заказ
+            </span>
+          )}
+        </div>
       </Link>
 
       {/* ── Контент ───────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 p-5 gap-3">
-        <Link to={`/product/${product.slug}`} className="font-serif font-semibold text-forge-text text-lg leading-snug
-                       line-clamp-2 group-hover:text-forge-primary transition-colors duration-200">
-          {product.name}
-        </Link>
-
-        {product.description && (
-          <p className="text-forge-muted text-sm leading-relaxed line-clamp-2 font-body flex-1 break-words">
-            {stripHtml(product.description)}
-          </p>
-        )}
-
+        
         {/* Категория */}
         {product.category && (
-          <span className="text-forge-primary/60 text-[10px] tracking-[0.2em] uppercase font-body">
+          <span className="text-[11px] font-semibold text-[#926435] uppercase tracking-wider">
             {product.category.name}
           </span>
         )}
 
-        {/* ── Цена + кнопка ─────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-3 mt-auto pt-4
-                        border-t border-forge-border/60">
-          <span className="font-serif font-bold text-forge-primary text-xl tracking-tight">
-            {price}
-          </span>
+        {/* Название товара */}
+        <Link
+          to={`/product/${product.slug}`}
+          className="font-heading font-bold text-[#162330] text-base leading-snug line-clamp-2
+                     group-hover:text-[#C59B6D] transition-colors"
+        >
+          {product.name}
+        </Link>
+
+        {/* Упаковочные характеристики: размеры, марка, минимальный тираж */}
+        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
+          {product.dimensions_mm && (
+            <span className="bg-slate-100 px-2 py-0.5 rounded font-medium text-slate-700">
+              {product.dimensions_mm}
+            </span>
+          )}
+          {product.material_specs && (
+            <span className="bg-[#FAF5EF] text-[#926435] px-2 py-0.5 rounded font-medium border border-[#E8D8C5]">
+              {product.material_specs}
+            </span>
+          )}
+          {minQty > 1 && (
+            <span className="text-slate-400">
+              партия от {minQty.toLocaleString('ru-RU')} шт.
+            </span>
+          )}
+        </div>
+
+        {/* Краткое описание */}
+        {product.description && (
+          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 flex-1">
+            {stripHtml(product.description)}
+          </p>
+        )}
+
+        {/* ── Нижняя строка: Цена + Кнопка ───────────────────── */}
+        <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t border-slate-100">
+          <div>
+            <div className="font-heading font-extrabold text-xl text-[#162330]">
+              {priceFormatted}
+            </div>
+            <div className="text-[10px] text-slate-400">
+              {minQty > 1 ? `за 1 шт. (мин. ${minQty} шт.)` : 'за штуку'}
+            </div>
+          </div>
 
           <button
             onClick={handleAdd}
             disabled={isAdding}
             aria-label={`Добавить «${product.name}» в корзину`}
             className={`
-              flex items-center gap-1.5 px-4 py-2.5
-              font-body font-semibold text-xs tracking-[0.12em] uppercase
-              rounded-none transition-all duration-200
-              disabled:opacity-40 disabled:cursor-not-allowed active:scale-95
+              px-4 py-2.5 rounded-xl font-heading font-semibold text-xs tracking-wider uppercase
+              transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer
               ${added
-                ? 'bg-green-800/70 text-green-300 border border-green-700/50'
-                : 'bg-forge-primary text-black hover:bg-forge-gold-lt'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-[#162330] hover:bg-[#1E2F40] text-white shadow-xs'
               }
             `}
           >
             {isAdding ? (
-              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10"
-                  stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
+              <span>...</span>
             ) : added ? (
-              <>
-                <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                  <path fillRule="evenodd"
-                    d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-                    clipRule="evenodd" />
-                </svg>
-                Добавлено
-              </>
+              <span>✓ В корзине</span>
             ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                  viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
-                  className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                {product.in_stock ? 'В корзину' : 'Под заказ'}
-              </>
+              <span>В корзину</span>
             )}
           </button>
         </div>
+
       </div>
     </article>
   )

@@ -18,11 +18,12 @@ class ArticleType(str, enum.Enum):
 
 
 class OrderStatus(str, enum.Enum):
-    pending       = "pending"
-    paid          = "paid"
-    in_production = "in_production"
-    shipped       = "shipped"
-    cancelled     = "cancelled"
+    pending       = "pending"       # Новая заявка / в обработке у менеджера
+    confirmed     = "confirmed"     # Подтвержден / счёт выставлен
+    in_production = "in_production" # В производстве / комплектуется
+    shipped       = "shipped"       # Отгружен / доставляется
+    completed     = "completed"     # Завершён
+    cancelled     = "cancelled"     # Отменён
 
 
 # ── Category ──────────────────────────────────────────────────────────────────
@@ -61,6 +62,11 @@ class Product(Base):
     length_cm:    Mapped[int | None]  = mapped_column(sa.Integer, nullable=True)
     width_cm:     Mapped[int | None]  = mapped_column(sa.Integer, nullable=True)
     height_cm:    Mapped[int | None]  = mapped_column(sa.Integer, nullable=True)
+    # ── НАМПАК: поля упаковочной продукции ───────────────────────────────────
+    min_order_qty:    Mapped[int]        = mapped_column(sa.Integer, nullable=False, default=1, server_default="1")
+    dimensions_mm:    Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
+    material_specs:   Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
+    is_custom_design: Mapped[bool]       = mapped_column(sa.Boolean, nullable=False, default=False, server_default=sa.false())
     category_id: Mapped[int | None]   = mapped_column(
         sa.Integer, sa.ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True
     )
@@ -196,6 +202,9 @@ class Order(Base):
     pvz_code:         Mapped[str | None] = mapped_column(sa.String(64), nullable=True)
     payment_method:   Mapped[str]     = mapped_column(sa.String(16), nullable=False, server_default="card")
     comment:      Mapped[str | None]  = mapped_column(sa.Text, nullable=True)
+    # ── НАМПАК: B2B-поля ─────────────────────────────────────────────────────
+    company_name:  Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
+    delivery_type: Mapped[str]        = mapped_column(sa.String(32), nullable=False, default="delivery", server_default="delivery")
     status:       Mapped[OrderStatus] = mapped_column(
         sa.Enum(OrderStatus, name="order_status"),
         nullable=False,
@@ -275,7 +284,8 @@ class SiteSettings(Base):
       about_title, about_text,
       contact_text, contact_phone1, contact_phone2,
       contact_address, contact_inn, contact_ogrnip,
-      social_vk, social_tg, social_yt, social_rutube,
+      contact_email, contact_legal_name,
+      social_vk, social_tg, social_yt, social_rutube, social_max,
       warranty_return_title, warranty_return_text,
       warranty_period_title, warranty_period_text
     """

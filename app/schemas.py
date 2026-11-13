@@ -41,7 +41,7 @@ class CategoryReorderRequest(BaseModel):
 class ProductBase(BaseModel):
     name:        str         = Field(..., min_length=1, max_length=256)
     slug:        str         = Field(..., min_length=1, max_length=256, pattern=r"^[a-z0-9-]+$")
-    price:       Decimal     = Field(..., gt=0, decimal_places=2)
+    price:       Decimal     = Field(..., ge=0, decimal_places=2)
     description: str | None  = Field(default=None)
     image_url:   str | None  = Field(default=None)
     in_stock:    bool        = Field(default=True)
@@ -50,6 +50,11 @@ class ProductBase(BaseModel):
     length_cm:    int | None = Field(default=None, ge=1)
     width_cm:     int | None = Field(default=None, ge=1)
     height_cm:    int | None = Field(default=None, ge=1)
+    # ── НАМПАК: поля упаковочной продукции ───────────────────────────────────
+    min_order_qty:    int        = Field(default=1, ge=1, description="Минимальный тираж/партия")
+    dimensions_mm:    str | None = Field(default=None, max_length=256, description="Размеры в мм, напр. '220×165×100'")
+    material_specs:   str | None = Field(default=None, max_length=256, description="Марка/толщина/тип материала")
+    is_custom_design: bool       = Field(default=False, description="Возможность нанесения логотипа или изготовления по заказу")
     category_id: int | None  = Field(default=None)
 
 class ProductCreate(ProductBase):
@@ -57,7 +62,7 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     name:        str | None     = Field(default=None, min_length=1, max_length=256)
     slug:        str | None     = Field(default=None, min_length=1, max_length=256, pattern=r"^[a-z0-9-]+$")
-    price:       Decimal | None = Field(default=None, gt=0, decimal_places=2)
+    price:       Decimal | None = Field(default=None, ge=0, decimal_places=2)
     description: str | None     = Field(default=None)
     image_url:   str | None     = Field(default=None)
     in_stock:    bool | None    = Field(default=None)
@@ -66,6 +71,11 @@ class ProductUpdate(BaseModel):
     length_cm:    int | None    = None
     width_cm:     int | None    = None
     height_cm:    int | None    = None
+    # ── НАМПАК ───────────────────────────────────────────────────────────────
+    min_order_qty:    int | None  = None
+    dimensions_mm:    str | None  = None
+    material_specs:   str | None  = None
+    is_custom_design: bool | None = None
     category_id: int | None     = Field(default=None)
     images: list[str] | None = None
 
@@ -169,19 +179,22 @@ class ArticleRead(ArticleBase):
 class CartItemAdd(BaseModel):
     session_id: str = Field(..., min_length=1, max_length=128)
     product_id: int = Field(..., gt=0)
-    quantity:   int = Field(default=1, ge=1, le=100)
+    quantity:   int = Field(default=1, ge=1, le=10_000_000)
 
 class CartItemRemove(BaseModel):
     session_id: str = Field(..., min_length=1, max_length=128)
     product_id: int = Field(..., gt=0)
 
 class CartItemRead(BaseModel):
-    product_id: int
-    quantity:   int
-    name:       str
-    price:      Decimal
-    image_url:  str | None
-    subtotal:   Decimal
+    product_id:     int
+    quantity:       int
+    name:           str
+    price:          Decimal
+    image_url:      str | None
+    subtotal:       Decimal
+    min_order_qty:  int = 1
+    dimensions_mm:  str | None = None
+    material_specs: str | None = None
 
 class CartRead(BaseModel):
     session_id: str
@@ -196,16 +209,23 @@ class CheckoutRequest(BaseModel):
     customer_name:    str      = Field(..., min_length=2, max_length=128)
     customer_phone:   str      = Field(..., pattern=r"^\+?[0-9\s\-\(\)]{7,20}$")
     customer_email:   str | None = Field(default=None)
-    delivery_address: str      = Field(..., min_length=5, max_length=512)
+    delivery_address: str      = Field(default="", max_length=512)
     pvz_code:         str | None = Field(default=None, max_length=64)
     delivery_cost:    Decimal  = Field(default=Decimal("0.00"), ge=0)
-    payment_method:   Literal["sbp", "card"] = "card"
+    payment_method:   Literal["sbp", "card", "invoice", "cash"] = "invoice"
     comment:          str | None = Field(default=None, max_length=1000)
+    # ── НАМПАК: B2B-поля ──────────────────────────────────────────────────────
+    company_name:  str | None = Field(default=None, max_length=256,
+                                      description="Название организации / ИП или ИНН")
+    delivery_type: Literal["pickup", "delivery", "custom_calc"] = Field(
+        default="delivery",
+        description="pickup — самовывоз, delivery — доставка, custom_calc — индивидуальный расчёт"
+    )
 
 class CheckoutResponse(BaseModel):
-    status:   str
-    message:  str
-    order_id: str
+    status:      str
+    message:     str
+    order_id:    str
     payment_url: str | None = None
 
 class OrderItemRead(BaseModel):
@@ -228,6 +248,9 @@ class OrderRead(BaseModel):
     pvz_code:         str | None = None
     payment_method: str
     comment:      str | None
+    # ── НАМПАК: B2B-поля ──────────────────────────────────────────────────────
+    company_name:  str | None = None
+    delivery_type: str = "delivery"
     status:       OrderStatus
     total_amount: Decimal
     payment_id:   str | None
@@ -254,6 +277,8 @@ class OrderStatusPublicRead(BaseModel):
     guest_email:      str | None = None
     payment_method:   str
     comment:          str | None = None
+    company_name:     str | None = None
+    delivery_type:    str = "delivery"
     cdek_number:      str | None = None
     created_at:       datetime
     items:            list[OrderItemRead] = []

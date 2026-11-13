@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { getToken } from './api/axios'
 import Layout from './components/Layout'
 import Catalog from './components/Catalog'
@@ -23,7 +23,8 @@ import AdminSiteSettings from './pages/admin/AdminSiteSettings'
 
 /* ── Protected route ──────────────────────────────────────── */
 function PrivateRoute({ children }) {
-  return getToken() ? children : <Navigate to="/admin/login" replace />
+  const location = useLocation()
+  return getToken() ? children : <Navigate to="/admin/login" state={{ from: location }} replace />
 }
 
 export default function App() {
@@ -44,7 +45,7 @@ export default function App() {
                   <ArticlesPage
                     type="news"
                     title="Новости"
-                    subtitle="Свежие новости из мастерской — новые коллекции, события и анонсы."
+                    subtitle="Свежие новости производства НАМПАК, расширение ассортимента гофротары и анонсы."
                     emptyText="Новости скоро появятся"
                   />
                 } />
@@ -52,7 +53,7 @@ export default function App() {
                   <ArticlesPage
                     type="training"
                     title="Обучение"
-                    subtitle="Мастер-классы, советы по уходу за изделиями и секреты ремесла."
+                    subtitle="Стандарты упаковки для Wildberries и Ozon, свойства картона и инструкции."
                     emptyText="Обучающие материалы скоро появятся"
                   />
                 } />

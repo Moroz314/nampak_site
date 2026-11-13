@@ -310,7 +310,7 @@ function ArticleModal({ article, sections, onClose, onSaved, onOpenSectionManage
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl
                             text-sm font-semibold border-2 transition-all
                             ${form.type === key
-                              ? 'border-orange-500 bg-orange-50 text-orange-700'
+                              ? 'border-[#C59B6D] bg-[#FAF5EF] text-[#B08455]'
                               : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
               >
                 <Icon size={18} /> {label}
@@ -413,9 +413,9 @@ function ArticleModal({ article, sections, onClose, onSaved, onOpenSectionManage
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingImg}
-                className="flex items-center gap-2 border-2 border-dashed border-gray-300 hover:border-orange-500 bg-gray-50 hover:bg-orange-50/40 text-gray-700 px-5 py-3 rounded-xl text-sm font-medium transition-colors"
+                className="flex items-center gap-2 border-2 border-dashed border-gray-300 hover:border-[#C59B6D] bg-gray-50 hover:bg-[#FAF5EF] text-gray-700 px-5 py-3 rounded-xl text-sm font-medium transition-colors"
               >
-                <Upload size={18} className="text-orange-600" />
+                <Upload size={18} className="text-[#C59B6D]" />
                 {uploadingImg ? 'Загрузка...' : 'Загрузить фото с устройства'}
               </button>
               <span className="text-xs text-gray-400">или введите URL ниже</span>
@@ -481,10 +481,10 @@ function ArticleModal({ article, sections, onClose, onSaved, onOpenSectionManage
    ══════════════════════════════════════════════════════════════ */
 function ArticleCard({ article, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const cfg  = TYPE_CONFIG[article.type]
+  const cfg  = TYPE_CONFIG[article.type] || TYPE_CONFIG.news
   const Icon = cfg.Icon
 
-  const date = new Date(article.created_at).toLocaleDateString('ru-RU', {
+  const date = new Date(article.created_at || Date.now()).toLocaleDateString('ru-RU', {
     day: '2-digit', month: 'long', year: 'numeric',
   })
 
@@ -624,9 +624,9 @@ export default function AdminContent() {
             </button>
             <button
               onClick={() => setModal('new')}
-              className="flex items-center gap-1.5 bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl active:bg-orange-700 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 bg-[#162330] hover:bg-[#1E2F40] text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors shadow-xs"
             >
-              <Plus size={17} /> Создать публикацию
+              <Plus size={17} className="text-[#C59B6D]" /> Создать публикацию
             </button>
           </div>
         </div>

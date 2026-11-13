@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 import sqlalchemy as sa
 from app.config import get_settings
 from app.database import Base, engine
-from app.routers import categories, products, cart, checkout, delivery, orders
+from app.routers import categories, products, cart, checkout, orders
 from app.routers import auth
-from app.routers import payments
 from app.routers import articles as public_articles
 from app.routers import gallery  as public_gallery
 from app.routers.admin import categories as admin_categories
@@ -27,6 +26,10 @@ from app.routers.admin import upload    as admin_upload
 from app.routers.admin import gallery   as admin_gallery
 from app.routers import settings         as public_settings
 from app.routers.admin import settings   as admin_settings
+# НАМПАК: payments и delivery оставлены в качестве заглушек (роутеры импортированы,
+# но НЕ подключены к app — чтобы не ломать импорты внутри orders.py и checkout.py)
+import app.routers.payments  # noqa: F401 — заглушка, не подключается к API
+import app.routers.delivery  # noqa: F401 — заглушка, не подключается к API
 
 settings = get_settings()
 
@@ -137,12 +140,38 @@ async def lifespan(app: FastAPI):
                         );
                     """)
                 )
-            # Добавляем новое значение 'in_production' в enum order_status (вне транзакции)
+                # ── НАМПАК: новые поля продуктов (упаковочная специфика) ────────
+                await conn.execute(
+                    sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS min_order_qty INTEGER DEFAULT 1;")
+                )
+                await conn.execute(
+                    sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions_mm VARCHAR(256);")
+                )
+                await conn.execute(
+                    sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS material_specs VARCHAR(256);")
+                )
+                await conn.execute(
+                    sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_custom_design BOOLEAN DEFAULT FALSE;")
+                )
+                # ── НАМПАК: новые поля заказов (B2B) ─────────────────────────────
+                await conn.execute(
+                    sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS company_name VARCHAR(256);")
+                )
+                await conn.execute(
+                    sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(32) DEFAULT 'delivery';")
+                )
+            # Добавляем новые значения в enum order_status (вне транзакции)
             try:
                 async with engine.connect() as auto_conn:
                     await auto_conn.execution_options(isolation_level="AUTOCOMMIT")
                     await auto_conn.execute(
                         sa.text("ALTER TYPE order_status ADD VALUE IF NOT EXISTS 'in_production';")
+                    )
+                    await auto_conn.execute(
+                        sa.text("ALTER TYPE order_status ADD VALUE IF NOT EXISTS 'confirmed';")
+                    )
+                    await auto_conn.execute(
+                        sa.text("ALTER TYPE order_status ADD VALUE IF NOT EXISTS 'completed';")
                     )
             except Exception as e_enum:
                 logger.debug("Enum update notice: %s", e_enum)
@@ -168,9 +197,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Мастерская Алдуин — API",
-    description="Backend интернет-магазина кожаных и кованых изделий",
-    version="0.3.0",
+    title="НАМПАК — API",
+    description="Backend B2B/B2C интернет-магазина упаковочных материалов «НАМПАК»",
+    version="1.0.0",
     docs_url=_docs_url,
     redoc_url=_redoc_url,
     openapi_url=_openapi_url,
@@ -216,10 +245,14 @@ app.include_router(products.router,          prefix="/api/products",   tags=["Pr
 app.include_router(cart.router,              prefix="/api/cart",       tags=["Cart"])
 app.include_router(checkout.router,          prefix="/api/checkout",   tags=["Checkout"])
 app.include_router(public_articles.router,   prefix="/api/articles",   tags=["Articles"])
+app.include_router(public_articles.router,   prefix="/api/content/articles", tags=["Articles (alias)"])
 app.include_router(public_gallery.router,    prefix="/api/gallery",    tags=["Gallery"])
-app.include_router(payments.router,          prefix="/api/payments",    tags=["Payments"])
-app.include_router(delivery.router,          prefix="/api/delivery",    tags=["Delivery"])
-app.include_router(orders.router,            prefix="/api/orders",      tags=["Orders"])
+app.include_router(orders.router,            prefix="/api/orders",     tags=["Orders"])
+# НАМПАК: payments и delivery — отключены (работа через менеджера).
+# Роутеры импортированы выше через `import app.routers.payments/delivery`,
+# чтобы не ломать внутренние ссылки. Раскомментируйте строки ниже для включения:
+# app.include_router(payments.router,         prefix="/api/payments",   tags=["Payments"])
+# app.include_router(delivery.router,         prefix="/api/delivery",   tags=["Delivery"])
 
 # ── Защищённые эндпоинты администратора ──────────────────────────────────────
 app.include_router(admin_categories.router,  prefix="/api/admin/categories", tags=["Admin · Categories"])

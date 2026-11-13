@@ -1,97 +1,51 @@
 import { Link } from 'react-router-dom'
 
-import heroAxe from './oboi2.jpg'
-
-/**
- * Hero.jsx — Главный экран.
- * Фон: затемнённое изображение с градиентом.
- * Замени HERO_IMAGE_URL на реальное фото.
- */
-
-const HERO_IMAGE_URL =
-  'https://img.goodfon.ru/wallpaper/big/1/18/topor-boevoi-vikingi.webp'
-
 export default function Hero() {
   return (
-    <section className="relative min-h-[92svh] md:min-h-screen flex items-center overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#162330] via-[#1E2F40] to-[#0F172A] text-white py-16 md:py-24 overflow-hidden border-b border-slate-200">
 
-      {/* ── Фон ────────────────────────────────────────────────── */}
-      <div className="absolute inset-0">
-        <img
-          src={heroAxe}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover object-center"
-          loading="eager"
-        />
-        {/* Многослойный градиент для глубины */}
-        <div className="absolute inset-0 bg-gradient-to-r
-                        from-black/90 via-black/60 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t
-                        from-forge-bg via-transparent to-transparent" />
-      </div>
+      {/* Фоновые декоративные элементы (сетка и мягкое свечение) */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#C59B6D_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#C59B6D]/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ── Контент ────────────────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-20 md:py-32">
-        <div className="max-w-xl">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl">
 
-          {/* Золотой над-тег */}
-          <p className="gold-tag animate-fade-up mb-5 [animation-delay:0ms]">
-            ◇ Мастерская Алдуин
-          </p>
+          {/* Верхний бейдж */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-xs text-xs font-heading font-semibold text-[#E8D8C5] mb-6">
+            <span>📦</span>
+            <span>Производство и оптовый склад упаковки • Доставка по всей РФ</span>
+          </div>
 
           {/* Главный заголовок */}
-          <h1 className="
-            font-serif font-bold text-forge-text
-            text-4xl sm:text-5xl md:text-6xl lg:text-7xl
-            leading-[1.1] tracking-tight
-            animate-fade-up [animation-delay:120ms]
-          ">
-            
-Мастерская
-            <br />
-            <span className="text-forge-primary text-glow-gold">
-              АЛДУИН
+          <h1 className="font-heading font-black text-3xl sm:text-5xl lg:text-6xl text-white leading-[1.15] tracking-tight mb-5">
+            Профессиональная упаковка <br className="hidden sm:inline" />
+            для вашего бизнеса от{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C59B6D] via-[#DFB98A] to-[#C59B6D]">
+              НАМПАК
             </span>
           </h1>
 
-          {/* Золотой разделитель */}
-          <div className="w-16 h-px bg-forge-primary my-7 animate-fade-up [animation-delay:200ms]" />
-
-          {/* Описание */}
-          <p className="
-            font-body text-forge-muted text-base sm:text-lg
-            leading-relaxed max-w-md
-            animate-fade-up [animation-delay:260ms]
-          ">
-            Всё, что можно представить, можно осуществить.
+          {/* Подзаголовок */}
+          <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl font-body">
+            Гофрокороба всех марок, курьерские пакеты с усиленным клапаном, скотч, Zip-Lock и БОПП пакеты, термоэтикетки. Собственное производство, оптовые цены и брендирование от 2 000 шт.
           </p>
 
-          {/* CTA кнопка */}
-          <div className="mt-10 flex flex-wrap gap-4 animate-fade-up [animation-delay:340ms]">
-            <a href="#catalog-section" className="btn-gold">
-              Перейти к изделиям ↓
+          {/* CTA кнопки */}
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href="#catalog-section"
+              className="px-7 py-3.5 bg-gradient-to-r from-[#C59B6D] to-[#B08455] hover:from-[#B08455] hover:to-[#9A7244]
+                         text-white font-heading font-bold text-sm tracking-wide rounded-xl shadow-lg transition-all active:scale-98"
+            >
+              Перейти в каталог продукции ↓
             </a>
-            <Link to="/about" className="btn-ghost">
-              О мастерской
-            </Link>
+
           </div>
+
         </div>
       </div>
 
-      {/* ── Стрелка вниз ────────────────────────────────────────── */}
-      <a
-        href="#catalog-section"
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10
-                   animate-bounce text-forge-primary/40 hover:text-forge-primary
-                   transition-colors cursor-pointer"
-        aria-label="Прокрутить к изделиям"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-      </a>
     </section>
   )
 }

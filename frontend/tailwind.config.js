@@ -7,42 +7,51 @@ export default {
 
   theme: {
     extend: {
-      // ── Премиальная палитра «Северная кузница» ──────────────────────────
+      // ── Фирменная палитра «НАМПАК» ──────────────────────────────────
       colors: {
-        'forge-bg':      '#000000', // строго черный
-        'forge-primary': '#C49A45', // благородное золото
-        'forge-text':    '#F3F4F6', // белый / светло-серый
-        // Вспомогательные
-        'forge-surface': '#111113', // чуть светлее фона
-        'forge-border':  '#1F1F23', // тонкая рамка
-        'forge-muted':   '#A7ADB8', // светлый приглушённый текст на фоне
-        'forge-gold-lt': '#E4C97A', // золото — hover
-        'forge-gold-dk': '#8B6A28', // тёмное золото — тень
+        // НАМПАК: основные цвета
+        'nampack-dark':        '#162330', // глубокий темно-синий графит («НАМ»)
+        'nampack-dark-hover':  '#1E2F40',
+        'nampack-gold':        '#C59B6D', // крафтово-золотой акцент («ПАК»)
+        'nampack-gold-hover':  '#B08455',
+        'nampack-gold-light':  '#FAF5EF',
+        'nampack-gold-border': '#E8D8C5',
+
+        // Адаптированная светлая тема (совместимость с существующими компонентами)
+        'forge-bg':      '#F8FAFC', // чистый светлый фон страницы
+        'forge-surface': '#FFFFFF', // белый фон карточек/панелей
+        'forge-border':  '#E2E8F0', // светлая граница
+        'forge-primary': '#C59B6D', // крафт-золото
+        'forge-text':    '#162330', // основной темно-синий текст
+        'forge-muted':   '#64748B', // приглушенный серо-синий
+        'forge-gold-lt': '#B08455',
+        'forge-gold-dk': '#8C5E2D',
       },
 
-      // ── Шрифты ──────────────────────────────────────────────────────────
+      // ── Шрифты ──────────────────────────────────────────────────────
       fontFamily: {
-        serif:   ['Playfair Display', 'Georgia', 'serif'],
-        heading: ['Playfair Display', 'Georgia', 'serif'],
+        heading: ['Manrope', 'system-ui', 'sans-serif'],
         body:    ['Inter', 'system-ui', 'sans-serif'],
+        serif:   ['Manrope', 'system-ui', 'sans-serif'],
       },
 
-      // ── Тени ────────────────────────────────────────────────────────────
+      // ── Тени ────────────────────────────────────────────────────────
       boxShadow: {
-        'gold':    '0 0 24px rgba(196,154,69,0.25)',
-        'gold-sm': '0 0 10px rgba(196,154,69,0.15)',
-        'dark':    '0 8px 40px rgba(0,0,0,0.8)',
+        'brand':   '0 4px 20px -2px rgba(22, 35, 48, 0.08)',
+        'gold':    '0 4px 20px -2px rgba(197, 155, 109, 0.25)',
+        'gold-sm': '0 2px 10px rgba(197, 155, 109, 0.15)',
+        'dark':    '0 10px 30px -5px rgba(22, 35, 48, 0.25)',
       },
 
-      // ── Анимации ────────────────────────────────────────────────────────
+      // ── Анимации ────────────────────────────────────────────────────
       keyframes: {
         'fade-up': {
-          '0%':   { opacity: '0', transform: 'translateY(24px)' },
+          '0%':   { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)'    },
         },
       },
       animation: {
-        'fade-up': 'fade-up 0.6s ease-out both',
+        'fade-up': 'fade-up 0.4s ease-out both',
       },
     },
   },

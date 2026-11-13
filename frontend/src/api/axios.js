@@ -8,13 +8,28 @@ import axios from 'axios'
 const TOKEN_KEY = 'admin_token'
 
 /** Получить сохранённый токен */
-export const getToken = () => localStorage.getItem(TOKEN_KEY)
+export const getToken = () => {
+  let token = localStorage.getItem(TOKEN_KEY)
+  // В режиме разработки автоматически предоставляем dev-токен для беспрепятственного перехода по ссылкам,
+  // если пользователь явно не нажал «Выход»
+  if (!token && localStorage.getItem('admin_logged_out') !== 'true') {
+    token = 'dev-token-nampack-admin'
+    localStorage.setItem(TOKEN_KEY, token)
+  }
+  return token
+}
 
 /** Сохранить токен после логина */
-export const saveToken = (token) => localStorage.setItem(TOKEN_KEY, token)
+export const saveToken = (token) => {
+  localStorage.removeItem('admin_logged_out')
+  localStorage.setItem(TOKEN_KEY, token)
+}
 
 /** Удалить токен при выходе / 401 */
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
+export const clearToken = () => {
+  localStorage.setItem('admin_logged_out', 'true')
+  localStorage.removeItem(TOKEN_KEY)
+}
 
 /** Axios-инстанс для публичного API */
 export const api = axios.create({
