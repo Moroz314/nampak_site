@@ -13,6 +13,7 @@ COPY app ./app
 COPY main.py .
 COPY create_admin.py .
 COPY seed.py .
+COPY seed_nampack.py .
 COPY migrate_from_wp.py .
 
 RUN mkdir -p /app/uploads/products

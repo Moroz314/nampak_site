@@ -1,9 +1,9 @@
-# alduin-workshop.ru — основной домен, HTTPS с автоматическим сертификатом Let's Encrypt
-alduin-workshop.ru {
+# НАМПАК — прием трафика по IP-адресу сервера (http://136.234.4.160) и любому хосту
+:80 {
     reverse_proxy frontend:80
 }
 
-# www.alduin-workshop.ru — постоянный редирект (301) на основной домен без www
-www.alduin-workshop.ru {
-    redir https://alduin-workshop.ru{uri} permanent
-}
+# При подключении собственного домена (например, nampak.ru) раскомментируйте блок ниже для авто-HTTPS:
+# nampak.ru, www.nampak.ru {
+#     reverse_proxy frontend:80
+# }
