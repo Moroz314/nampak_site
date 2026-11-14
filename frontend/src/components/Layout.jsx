@@ -192,7 +192,7 @@ function MainHeader({ settings, onOpenMobileMenu }) {
           <Link to="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
             {!logoError ? (
               <img
-                src="/logo-nampack.jpg"
+                src="/logo-nampack.png"
                 alt="НАМПАК"
                 onError={() => setLogoError(true)}
                 className="w-10 h-10 sm:w-11 sm:h-11 md:w-13 md:h-13 rounded-lg object-contain shadow-xs border border-slate-100"
