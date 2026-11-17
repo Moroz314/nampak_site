@@ -55,7 +55,7 @@ const GridIcon = ({ className = "w-5 h-5" }) => (
 
 const TgIcon = ({ className = "w-4 h-4" }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
   </svg>
 )
 
@@ -96,19 +96,19 @@ const LogoutIcon = ({ className = "w-4 h-4" }) => (
 const DEFAULT_SETTINGS = {
   contact_phone1: '+7 (993) 117-64-92',
   contact_phone2: '+7 (965) 032-61-18',
-  contact_email:  'nampack@yandex.ru',
-  social_tg:      'https://t.me/namupak',
-  social_max:     'https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg',
+  contact_email: 'nampack@yandex.ru',
+  social_tg: 'https://t.me/namupak',
+  social_max: 'https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg',
   contact_legal_name: 'НАМПАК — Упаковочные материалы',
 }
 
 const NAV_MENU_ITEMS = [
-  { to: '/',         label: 'Главная' },
-  { to: '/about',    label: 'О компании' },
-  { to: '/payment',  label: 'Оплата и доставка' },
+  { to: '/', label: 'Главная' },
+  { to: '/about', label: 'О компании' },
+  { to: '/payment', label: 'Оплата и доставка' },
   { to: '/training', label: 'Обучение' },
-  { to: '/news',     label: 'Новости' },
-  { to: '/gallery',  label: 'Галерея продукции' },
+  { to: '/news', label: 'Новости' },
+  { to: '/gallery', label: 'Галерея продукции' },
   { to: '/contacts', label: 'Контакты' },
 ]
 
@@ -116,9 +116,9 @@ const NAV_MENU_ITEMS = [
    1. TOP BAR
    ══════════════════════════════════════════════════════════════ */
 function TopBar({ settings }) {
-  const tgUrl  = settings.social_tg || DEFAULT_SETTINGS.social_tg
+  const tgUrl = settings.social_tg || DEFAULT_SETTINGS.social_tg
   const maxUrl = settings.social_max || DEFAULT_SETTINGS.social_max
-  const email  = settings.contact_email || DEFAULT_SETTINGS.contact_email
+  const email = settings.contact_email || DEFAULT_SETTINGS.contact_email
 
   return (
     <div className="bg-slate-100 text-slate-600 text-xs py-1.5 border-b border-slate-200">
@@ -168,13 +168,13 @@ function TopBar({ settings }) {
    2. MAIN HEADER (Search, Logo, Phones, Cart)
    ══════════════════════════════════════════════════════════════ */
 function MainHeader({ settings, onOpenMobileMenu }) {
-  const dispatch  = useDispatch()
+  const dispatch = useDispatch()
   const itemCount = useSelector(selectItemCount)
   const cartTotal = useSelector(selectTotal)
-  const user      = useSelector((state) => state.user.user)
-  const token     = useSelector((state) => state.user.token)
-  const navigate  = useNavigate()
-  const location  = useLocation()
+  const user = useSelector((state) => state.user.user)
+  const token = useSelector((state) => state.user.token)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [logoError, setLogoError] = useState(false)
@@ -206,7 +206,7 @@ function MainHeader({ settings, onOpenMobileMenu }) {
 
   const phone1 = settings.contact_phone1 || DEFAULT_SETTINGS.contact_phone1
   const phone2 = settings.contact_phone2 || DEFAULT_SETTINGS.contact_phone2
-  const tgUrl  = settings.social_tg || DEFAULT_SETTINGS.social_tg
+  const tgUrl = settings.social_tg || DEFAULT_SETTINGS.social_tg
 
   const cartTotalFormatted = Number(cartTotal || 0).toLocaleString('ru-RU', {
     minimumFractionDigits: 0,
@@ -217,7 +217,7 @@ function MainHeader({ settings, onOpenMobileMenu }) {
     <header className="bg-white border-b border-slate-100 py-2.5 sm:py-3 md:py-4">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-2.5 sm:gap-4 md:gap-6">
-          
+
           {/* ── ЛОГОТИП ────────────────────────────────────────── */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
             {!logoError ? (
@@ -322,7 +322,7 @@ function MainHeader({ settings, onOpenMobileMenu }) {
 
           {/* ── КНОПКИ АВТОРИЗАЦИИ, КОРЗИНЫ И МЕНЮ ────────────── */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            
+
             {/* Личный кабинет / Вход */}
             {token && user ? (
               <div className="flex items-center gap-1">
@@ -443,7 +443,7 @@ function Navbar() {
     <nav className="bg-white border-b border-slate-200 py-2.5 hidden lg:block sticky top-0 z-30 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          
+
           {/* Кнопка "Каталог товаров" (темная) */}
           <button
             type="button"
@@ -464,8 +464,7 @@ function Navbar() {
                 to={item.to}
                 end={item.to === '/'}
                 className={({ isActive }) =>
-                  `transition-colors duration-150 whitespace-nowrap hover:text-amber-100 ${
-                    isActive ? 'font-bold text-white underline underline-offset-4 decoration-2' : 'text-white/95'
+                  `transition-colors duration-150 whitespace-nowrap hover:text-amber-100 ${isActive ? 'font-bold text-white underline underline-offset-4 decoration-2' : 'text-white/95'
                   }`
                 }
               >
@@ -488,19 +487,19 @@ function Footer({ settings }) {
 
   const phone1 = settings.contact_phone1 || DEFAULT_SETTINGS.contact_phone1
   const phone2 = settings.contact_phone2 || DEFAULT_SETTINGS.contact_phone2
-  const email  = settings.contact_email || DEFAULT_SETTINGS.contact_email
-  const tgUrl  = settings.social_tg || DEFAULT_SETTINGS.social_tg
+  const email = settings.contact_email || DEFAULT_SETTINGS.contact_email
+  const tgUrl = settings.social_tg || DEFAULT_SETTINGS.social_tg
   const maxUrl = settings.social_max || DEFAULT_SETTINGS.social_max
-  const legal  = settings.contact_legal_name || DEFAULT_SETTINGS.contact_legal_name
+  const legal = settings.contact_legal_name || DEFAULT_SETTINGS.contact_legal_name
 
   return (
     <footer className="bg-white border-t border-slate-200 mt-auto pb-14 md:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
+
           {/* ── ЛЕВАЯ ЧАСТЬ (3 колонки ссылок + логотип и копирайт) ── */}
           <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
-            
+
             {/* Колонка 1: Каталог */}
             <div>
               <h4 className="font-heading font-bold text-[#162330] text-sm uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">
@@ -634,8 +633,8 @@ function Footer({ settings }) {
 function StickyBottomBar() {
   const itemCount = useSelector(selectItemCount)
   const cartTotal = useSelector(selectTotal)
-  const navigate  = useNavigate()
-  const location  = useLocation()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const formattedTotal = Number(cartTotal || 0).toLocaleString('ru-RU', {
     minimumFractionDigits: 0,
@@ -652,20 +651,7 @@ function StickyBottomBar() {
         className="bg-[#162330] text-white py-2.5 px-6 fixed bottom-0 left-0 right-0 z-40 hidden md:flex items-center justify-between border-t border-slate-700 shadow-[0_-4px_25px_rgba(0,0,0,0.2)]"
       >
         <div className="flex items-center gap-6 text-xs text-slate-300 font-medium">
-          <span className="flex items-center gap-1.5">
-            <span className="text-[#C59B6D]">📦</span>
-            <span>Изготовление под заказ до 5 дней</span>
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="text-[#C59B6D]">🎨</span>
-            <span>Нанесение вашего логотипа от 2000 шт.</span>
-          </span>
-          <span className="text-slate-600">•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="text-[#C59B6D]">🚚</span>
-            <span>Быстрая отгрузка по РФ</span>
-          </span>
+
         </div>
 
         <div className="flex items-center gap-4">
@@ -736,7 +722,7 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
   const user = useSelector((state) => state.user.user)
   const token = useSelector((state) => state.user.token)
   const phone1 = settings.contact_phone1 || DEFAULT_SETTINGS.contact_phone1
-  const tgUrl  = settings.social_tg || DEFAULT_SETTINGS.social_tg
+  const tgUrl = settings.social_tg || DEFAULT_SETTINGS.social_tg
   const maxUrl = settings.social_max || DEFAULT_SETTINGS.social_max
 
   useEffect(() => {
@@ -749,14 +735,12 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
     <>
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ${
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
       />
       <div
-        className={`fixed top-0 right-0 bottom-0 z-50 w-72 bg-white border-l border-slate-200 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 bottom-0 z-50 w-72 bg-white border-l border-slate-200 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
           <div className="font-heading font-bold text-lg text-[#162330]">
@@ -809,10 +793,9 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
               end={item.to === '/'}
               onClick={onClose}
               className={({ isActive }) =>
-                `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-[#FAF5EF] text-[#C59B6D] font-bold'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                `block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                  ? 'bg-[#FAF5EF] text-[#C59B6D] font-bold'
+                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                 }`
               }
             >
@@ -857,7 +840,7 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
    ГЛАВНЫЙ КОМПОНЕНТ LAYOUT
    ══════════════════════════════════════════════════════════════ */
 export default function Layout({ children }) {
-  const dispatch  = useDispatch()
+  const dispatch = useDispatch()
   const sessionId = useSelector(selectSessionId)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
@@ -866,7 +849,7 @@ export default function Layout({ children }) {
   useEffect(() => {
     api.get('/settings/')
       .then(({ data }) => setSettings(prev => ({ ...prev, ...data })))
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   // Подтягиваем корзину при монтировании
