@@ -240,6 +240,7 @@ class OrderRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id:           int
     order_id:     str
+    user_id:      int | None = None
     guest_name:   str
     guest_phone:  str
     guest_email:  str | None
@@ -334,3 +335,53 @@ class GalleryRead(GalleryBase):
     model_config = ConfigDict(from_attributes=True)
     id:         int
     created_at: datetime
+
+
+# ── Customer Account (Личный кабинет покупателя / B2B) ────────────────────────
+
+class CustomerRegisterRequest(BaseModel):
+    email: str = Field(..., max_length=256)
+    password: str = Field(..., min_length=6, max_length=128)
+    full_name: str = Field(..., min_length=2, max_length=256)
+    phone: str | None = Field(default=None, max_length=64)
+    company_name: str | None = Field(default=None, max_length=256)
+    inn: str | None = Field(default=None, max_length=32)
+    edo_operator: str | None = Field(default=None, max_length=128)
+    session_id: str | None = Field(default=None, max_length=128)
+
+
+class CustomerLoginRequest(BaseModel):
+    email: str = Field(..., max_length=256)
+    password: str = Field(..., max_length=128)
+    session_id: str | None = Field(default=None, max_length=128)
+
+
+class CustomerProfileRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    full_name: str
+    phone: str | None = None
+    company_name: str | None = None
+    inn: str | None = None
+    edo_operator: str | None = None
+    default_delivery_address: str | None = None
+    created_at: datetime
+
+
+class CustomerProfileUpdate(BaseModel):
+    full_name: str | None = Field(default=None, max_length=256)
+    phone: str | None = Field(default=None, max_length=64)
+    company_name: str | None = Field(default=None, max_length=256)
+    inn: str | None = Field(default=None, max_length=32)
+    edo_operator: str | None = Field(default=None, max_length=128)
+    default_delivery_address: str | None = Field(default=None, max_length=512)
+    current_password: str | None = Field(default=None, max_length=128)
+    new_password: str | None = Field(default=None, min_length=6, max_length=128)
+
+
+class CustomerTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: CustomerProfileRead

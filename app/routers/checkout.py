@@ -14,7 +14,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request,
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Order, OrderItem, OrderStatus
+from app.dependencies import get_optional_current_user
+from app.models import Order, OrderItem, OrderStatus, User
 from app.routers.cart import _build_cart
 from app.schemas import CheckoutRequest, CheckoutResponse
 from app.services.email_service import send_new_order_email
@@ -32,12 +33,23 @@ async def checkout(
     body:             CheckoutRequest,
     request:          Request,
     background_tasks: BackgroundTasks,
+    user:             User | None = Depends(get_optional_current_user),
     db:               AsyncSession = Depends(get_db),
 ) -> CheckoutResponse:
     redis = request.app.state.redis
 
-    # 1. Получить корзину из Redis
-    cart = await _build_cart(body.session_id, redis, db)
+    # 1. Получить корзину из Redis (учитываем авторизованного покупателя)
+    cart_key = f"cart:user:{user.id}" if user else f"cart:{body.session_id}"
+    cart = await _build_cart(body.session_id, redis, db, cart_key=cart_key)
+
+    # Если в корзине пользователя пусто, проверяем гостевую сессию
+    if not cart.items and user and body.session_id:
+        guest_key = f"cart:{body.session_id}"
+        guest_cart = await _build_cart(body.session_id, redis, db, cart_key=guest_key)
+        if guest_cart.items:
+            cart = guest_cart
+            cart_key = guest_key
+
     if not cart.items:
         raise HTTPException(status_code=400, detail="Корзина пуста")
 
@@ -47,9 +59,10 @@ async def checkout(
     delivery_cost = body.delivery_cost if body.delivery_cost is not None else Decimal("0.00")
     total_with_delivery = cart.total + delivery_cost
 
-    # 3. Создать заказ в БД (сразу в статусе pending — «Новая заявка»)
+    # 3. Создать заказ в БД (с привязкой к user_id если авторизован)
     order = Order(
         order_id         = order_id,
+        user_id          = user.id if user else None,
         guest_name       = body.customer_name,
         guest_phone      = body.customer_phone,
         guest_email      = body.customer_email,
@@ -64,6 +77,16 @@ async def checkout(
         total_amount     = total_with_delivery,
     )
     db.add(order)
+
+    # Автосохранение контактов в профиль пользователя при первой покупке
+    if user:
+        if not user.phone and body.customer_phone:
+            user.phone = body.customer_phone.strip()
+        if not user.company_name and body.company_name:
+            user.company_name = body.company_name.strip()
+        if not user.default_delivery_address and body.delivery_address:
+            user.default_delivery_address = body.delivery_address.strip()
+
     await db.flush()  # получаем order.id для FK в OrderItem
 
     # 4. Создать позиции заказа (снимок данных на момент заказа)
@@ -107,7 +130,11 @@ async def checkout(
     background_tasks.add_task(send_new_order_email, order_data)
 
     # 6. Очистить корзину в Redis
-    await redis.delete(f"cart:{body.session_id}")
+    await redis.delete(cart_key)
+    if user:
+        await redis.delete(f"cart:user:{user.id}")
+        if body.session_id:
+            await redis.delete(f"cart:{body.session_id}")
 
     return CheckoutResponse(
         status   = "created",

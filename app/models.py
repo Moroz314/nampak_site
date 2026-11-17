@@ -138,6 +138,35 @@ class AdminUser(Base):
         return f"<AdminUser id={self.id} username={self.username!r}>"
 
 
+# ── Customer User (Покупатели / B2B) ──────────────────────────────────────────
+
+class User(Base):
+    __tablename__ = "users"
+
+    id:                       Mapped[int]             = mapped_column(sa.Integer, primary_key=True, index=True)
+    email:                    Mapped[str]             = mapped_column(sa.String(256), nullable=False, unique=True, index=True)
+    hashed_password:          Mapped[str]             = mapped_column(sa.String(256), nullable=False)
+    full_name:                Mapped[str]             = mapped_column(sa.String(256), nullable=False)
+    phone:                    Mapped[str | None]      = mapped_column(sa.String(64), nullable=True)
+    company_name:             Mapped[str | None]      = mapped_column(sa.String(256), nullable=True)
+    inn:                      Mapped[str | None]      = mapped_column(sa.String(32), nullable=True)
+    edo_operator:             Mapped[str | None]      = mapped_column(sa.String(128), nullable=True)
+    default_delivery_address: Mapped[str | None]      = mapped_column(sa.String(512), nullable=True)
+    is_active:                Mapped[bool]            = mapped_column(sa.Boolean, nullable=False, default=True, server_default=sa.true())
+    created_at:               Mapped[datetime]        = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        server_default=sa.func.now(),
+    )
+
+    orders: Mapped[list["Order"]] = relationship(
+        "Order", back_populates="user", lazy="selectin", order_by="desc(Order.created_at)"
+    )
+
+    def __repr__(self) -> str:
+        return f"<User id={self.id} email={self.email!r}>"
+
+
 # ── TrainingSection + Article ────────────────────────────────────────────────
 
 class TrainingSection(Base):
@@ -202,7 +231,10 @@ class Order(Base):
     pvz_code:         Mapped[str | None] = mapped_column(sa.String(64), nullable=True)
     payment_method:   Mapped[str]     = mapped_column(sa.String(16), nullable=False, server_default="card")
     comment:      Mapped[str | None]  = mapped_column(sa.Text, nullable=True)
-    # ── НАМПАК: B2B-поля ─────────────────────────────────────────────────────
+    # ── НАМПАК: B2B-поля и привязка к личному кабинету ──────────────────────
+    user_id:       Mapped[int | None] = mapped_column(
+        sa.Integer, sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     company_name:  Mapped[str | None] = mapped_column(sa.String(256), nullable=True)
     delivery_type: Mapped[str]        = mapped_column(sa.String(32), nullable=False, default="delivery", server_default="delivery")
     status:       Mapped[OrderStatus] = mapped_column(
@@ -224,6 +256,9 @@ class Order(Base):
         server_default=sa.func.now(),
     )
 
+    user: Mapped["User | None"] = relationship(
+        "User", back_populates="orders", lazy="selectin"
+    )
     items: Mapped[list["OrderItem"]] = relationship(
         "OrderItem", back_populates="order", cascade="all, delete-orphan", lazy="selectin"
     )

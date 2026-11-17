@@ -15,7 +15,7 @@ import sqlalchemy as sa
 from app.config import get_settings
 from app.database import Base, engine
 from app.routers import categories, products, cart, checkout, orders, inquiries
-from app.routers import auth
+from app.routers import auth, customer_auth
 from app.routers import articles as public_articles
 from app.routers import gallery  as public_gallery
 from app.routers.admin import categories as admin_categories
@@ -168,7 +168,13 @@ async def lifespan(app: FastAPI):
                 await conn.execute(
                     sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_custom_design BOOLEAN DEFAULT FALSE;")
                 )
-                # ── НАМПАК: новые поля заказов (B2B) ─────────────────────────────
+                # ── НАМПАК: новые поля заказов (B2B и личный кабинет) ────────────
+                await conn.execute(
+                    sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;")
+                )
+                await conn.execute(
+                    sa.text("CREATE INDEX IF NOT EXISTS ix_orders_user_id ON orders (user_id);")
+                )
                 await conn.execute(
                     sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS company_name VARCHAR(256);")
                 )
@@ -255,6 +261,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ── Публичные эндпоинты ──────────────────────────────────────────────────────
 app.include_router(auth.router,              prefix="/api/auth",       tags=["Auth"])
+app.include_router(customer_auth.router,     prefix="/api/user",       tags=["Customer · Account"])
 app.include_router(categories.router,        prefix="/api/categories", tags=["Categories"])
 app.include_router(products.router,          prefix="/api/products",   tags=["Products"])
 app.include_router(cart.router,              prefix="/api/cart",       tags=["Cart"])
