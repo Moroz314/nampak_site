@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import { api } from '../api/axios'
 
 function createSessionId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -34,7 +34,7 @@ export const fetchCart = createAsyncThunk(
   'cart/fetch',
   async (sessionId, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/cart/${sessionId}`)
+      const { data } = await api.get(`/cart/${sessionId}`)
       return data
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail ?? 'Ошибка загрузки корзины')
@@ -47,7 +47,7 @@ export const addToCart = createAsyncThunk(
   'cart/add',
   async ({ sessionId, productId, quantity = 1 }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post('/api/cart/add', {
+      const { data } = await api.post('/cart/add', {
         session_id: sessionId,
         product_id: productId,
         quantity,
@@ -64,7 +64,7 @@ export const removeFromCart = createAsyncThunk(
   'cart/remove',
   async ({ sessionId, productId }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.delete('/api/cart/remove', {
+      const { data } = await api.delete('/cart/remove', {
         data: { session_id: sessionId, product_id: productId },
       })
       return data
@@ -85,10 +85,10 @@ export const updateQuantity = createAsyncThunk(
         return result.payload
       }
       // Удаляем старую запись и добавляем с новым quantity
-      await axios.delete('/api/cart/remove', {
+      await api.delete('/cart/remove', {
         data: { session_id: sessionId, product_id: productId },
       })
-      const { data } = await axios.post('/api/cart/add', {
+      const { data } = await api.post('/cart/add', {
         session_id: sessionId,
         product_id: productId,
         quantity,

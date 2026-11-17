@@ -8,6 +8,7 @@ import {
   selectTotal,
   selectSessionId,
 } from '../store/cartSlice'
+import { logoutUser } from '../store/userSlice'
 import CartDrawer from './CartDrawer'
 import CookieBanner from './CookieBanner'
 import { api } from '../api/axios'
@@ -70,6 +71,24 @@ const PhoneIcon = ({ className = "w-4 h-4" }) => (
     strokeWidth={2} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round"
       d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+  </svg>
+)
+
+const UserIcon = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+  </svg>
+)
+
+const UserCheckIcon = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5 15.5 11l-2-2m-1.75 5.25a6.002 6.002 0 0 0-9.5 0A17.933 17.933 0 0 1 12 21.75c2.676 0 5.216-.584 7.499-1.632m-7.499-8.118a3.75 3.75 0 1 1 0-7.5 3.75 3.75 0 0 1 0 7.5Z" />
+  </svg>
+)
+
+const LogoutIcon = ({ className = "w-4 h-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
   </svg>
 )
 
@@ -152,6 +171,8 @@ function MainHeader({ settings, onOpenMobileMenu }) {
   const dispatch  = useDispatch()
   const itemCount = useSelector(selectItemCount)
   const cartTotal = useSelector(selectTotal)
+  const user      = useSelector((state) => state.user.user)
+  const token     = useSelector((state) => state.user.token)
   const navigate  = useNavigate()
   const location  = useLocation()
 
@@ -299,8 +320,57 @@ function MainHeader({ settings, onOpenMobileMenu }) {
             )}
           </div>
 
-          {/* ── КНОПКА КОРЗИНЫ И МОБИЛЬНОЕ МЕНЮ ────────────────── */}
+          {/* ── КНОПКИ АВТОРИЗАЦИИ, КОРЗИНЫ И МЕНЮ ────────────── */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            
+            {/* Личный кабинет / Вход */}
+            {token && user ? (
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/account"
+                  className="bg-[#FAF5EF] hover:bg-[#F3E8DB] border border-[#E8D8C5] hover:border-[#C59B6D]
+                             text-[#162330] rounded-xl p-2 sm:px-3 sm:py-2.5 flex items-center gap-2
+                             transition-all shadow-xs group"
+                  title="Личный кабинет"
+                >
+                  <div className="text-[#C59B6D] group-hover:scale-105 transition-transform">
+                    <UserCheckIcon className="w-5 h-5" />
+                  </div>
+                  <div className="hidden sm:flex flex-col text-left leading-tight max-w-[105px]">
+                    <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Кабинет</span>
+                    <span className="text-xs font-bold text-[#162330] truncate">
+                      {user.full_name?.split(' ')[0] || user.company_name || 'Профиль'}
+                    </span>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => dispatch(logoutUser())}
+                  title="Выйти"
+                  className="hidden md:flex p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <LogoutIcon className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-slate-100 hover:bg-[#FAF5EF] border border-slate-200 hover:border-[#E8D8C5]
+                           text-slate-700 hover:text-[#C59B6D] rounded-xl p-2 sm:px-3 sm:py-2.5 flex items-center gap-2
+                           transition-all shadow-xs group"
+                title="Войти в личный кабинет"
+              >
+                <div className="text-slate-500 group-hover:text-[#C59B6D] transition-colors">
+                  <UserIcon className="w-5 h-5" />
+                </div>
+                <div className="hidden sm:flex flex-col text-left leading-tight">
+                  <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Кабинет</span>
+                  <span className="text-xs font-bold whitespace-nowrap">
+                    Вход / Регистрация
+                  </span>
+                </div>
+              </Link>
+            )}
+
             <button
               onClick={() => dispatch(toggleDrawer())}
               className="relative bg-[#FAF5EF] hover:bg-[#F3E8DB] border border-[#E8D8C5] hover:border-[#C59B6D]
@@ -662,6 +732,9 @@ function StickyBottomBar() {
    6. MOBILE MENU OVERLAY
    ══════════════════════════════════════════════════════════════ */
 function MobileMenuDrawer({ isOpen, onClose, settings }) {
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.user.user)
+  const token = useSelector((state) => state.user.token)
   const phone1 = settings.contact_phone1 || DEFAULT_SETTINGS.contact_phone1
   const tgUrl  = settings.social_tg || DEFAULT_SETTINGS.social_tg
   const maxUrl = settings.social_max || DEFAULT_SETTINGS.social_max
@@ -692,6 +765,40 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
           <button onClick={onClose} className="p-1.5 text-slate-500 hover:text-slate-800">
             <XIcon />
           </button>
+        </div>
+
+        {/* Авторизация в мобильном меню */}
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+          {token && user ? (
+            <div className="flex items-center justify-between gap-2">
+              <Link
+                to="/account"
+                onClick={onClose}
+                className="flex items-center gap-2 text-xs font-bold text-[#162330] hover:text-[#C59B6D] truncate"
+              >
+                <UserCheckIcon className="w-4 h-4 text-[#C59B6D] flex-shrink-0" />
+                <span className="truncate">{user.full_name || 'Личный кабинет'}</span>
+              </Link>
+              <button
+                onClick={() => {
+                  dispatch(logoutUser())
+                  onClose()
+                }}
+                className="text-xs text-red-600 hover:underline flex-shrink-0"
+              >
+                Выйти
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              onClick={onClose}
+              className="flex items-center gap-2 text-xs font-bold text-[#162330] hover:text-[#C59B6D]"
+            >
+              <UserIcon className="w-4 h-4 text-[#C59B6D]" />
+              <span>Вход / Регистрация</span>
+            </Link>
+          )}
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">

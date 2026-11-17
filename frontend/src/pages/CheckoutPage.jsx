@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { api } from '../api/axios'
@@ -64,6 +64,7 @@ export default function CheckoutPage() {
   const items     = useSelector(selectItems)
   const cartTotal = useSelector(selectTotal)
   const sessionId = useSelector(selectSessionId)
+  const user      = useSelector((state) => state.user.user)
 
   // Поля формы
   const [form, setForm] = useState({
@@ -76,6 +77,26 @@ export default function CheckoutPage() {
     payment_method: 'invoice', // 'invoice' | 'sbp'
     comment:      '',
   })
+
+  // Автозаполнение из профиля авторизованного покупателя
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name || user.full_name || '',
+        phone: prev.phone || user.phone || '',
+        email: prev.email || user.email || '',
+        company_name:
+          prev.company_name ||
+          (user.company_name
+            ? user.inn
+              ? `${user.company_name} (ИНН: ${user.inn})`
+              : user.company_name
+            : ''),
+        address: prev.address || user.default_delivery_address || '',
+      }))
+    }
+  }, [user])
 
   const [agreed, setAgreed]   = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -187,6 +208,45 @@ export default function CheckoutPage() {
             Заполните данные для связи и выставления счёта. Менеджер <strong>НАМПАК</strong> свяжется с вами для согласования объёма, доставки и точных условий поставки.
           </p>
         </div>
+
+        {/* Информационный баннер авторизации */}
+        {user ? (
+          <div className="mb-6 p-4 rounded-2xl bg-[#FAF5EF] border border-[#E8D8C5] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="w-7 h-7 rounded-full bg-[#162330] text-[#C59B6D] flex items-center justify-center font-bold text-xs flex-shrink-0">
+                ✓
+              </span>
+              <div>
+                <span className="font-bold text-[#162330] text-sm block">
+                  Вы авторизованы как {user.full_name} ({user.email})
+                </span>
+                <span className="text-slate-600">
+                  Реквизиты предзаполнены из профиля. Заявка сохранится в вашей истории заказов.
+                </span>
+              </div>
+            </div>
+            <Link
+              to="/account"
+              className="text-[#C59B6D] hover:underline font-bold whitespace-nowrap self-end sm:self-center"
+            >
+              В личный кабинет →
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-6 p-4 rounded-2xl bg-white border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-xs">
+            <div className="text-slate-600">
+              <span className="font-bold text-slate-800 text-sm block">Уже заказывали у нас?</span>
+              Войдите в личный кабинет, чтобы реквизиты организации подставились автоматически.
+            </div>
+            <Link
+              to="/login"
+              state={{ from: { pathname: '/checkout' } }}
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-[#FAF5EF] border border-slate-300 hover:border-[#C59B6D] text-[#162330] hover:text-[#C59B6D] font-bold whitespace-nowrap transition-all shadow-2xs self-end sm:self-center"
+            >
+              Войти в кабинет
+            </Link>
+          </div>
+        )}
 
         {items.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center max-w-md mx-auto shadow-xs">

@@ -12,6 +12,9 @@ import WarrantyPage from './pages/WarrantyPage'
 import PrivacyPage from './pages/PrivacyPage'
 import PaymentPage from './pages/PaymentPage'
 import OrderSuccessPage from './pages/OrderSuccessPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import AccountPage from './pages/AccountPage'
 
 /* Admin pages */
 import AdminLogin        from './pages/admin/AdminLogin'
@@ -65,6 +68,9 @@ export default function App() {
                 <Route path="/warranty"  element={<WarrantyPage />} />
                 <Route path="/privacy"   element={<PrivacyPage />} />
                 <Route path="/payment"   element={<PaymentPage />} />
+                <Route path="/login"     element={<LoginPage />} />
+                <Route path="/register"  element={<RegisterPage />} />
+                <Route path="/account"   element={<AccountPage />} />
                 <Route path="/product/:slug" element={<ProductPage />} />
                 <Route path="*"          element={<Navigate to="/" replace />} />
               </Routes>
