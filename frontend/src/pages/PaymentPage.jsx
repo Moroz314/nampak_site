@@ -47,7 +47,7 @@ export default function PaymentPage() {
               </div>
               <h2 className="text-2xl font-bold text-[#162330] mb-3">Способы оплаты</h2>
               <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                Все заказы оформляются через менеджера НАМПАК. После согласования партии, наличия на складе и адреса доставки вам выставляется счёт или формируется ссылка для оплаты.
+                Все заказы оформляются через менеджера НАМПАК. После согласования партии, наличия на складе и адреса доставки вам выставляется счёт.
               </p>
 
               <div className="space-y-4">
@@ -57,34 +57,23 @@ export default function PaymentPage() {
                     <span>Безналичный расчёт для юрлиц и ИП</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Оплата по счёту с НДС или без НДС. Работаем по договору поставки, предоставляем УПД, сертификаты качества и паспорта на продукцию. Поддерживаем ЭДО (Диадок, СБИС) для мгновенного документооборота.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70">
-                  <div className="flex items-center gap-2 mb-1.5 font-bold text-sm text-[#162330]">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>СБП и банковские переводы для физлиц</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Мгновенная оплата через Систему быстрых платежей (СБП) по QR-коду любого банка РФ без комиссии, а также банковским переводом на расчётный счёт компании.
+                    Оплата по счёту. Поддерживаем ЭДО (Диадок, СБИС) для мгновенного документооборота.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70">
                   <div className="flex items-center gap-2 mb-1.5 font-bold text-sm text-[#162330]">
                     <FileText className="w-4 h-4 text-[#162330]" />
-                    <span>Индивидуальные условия и отсрочка платежа</span>
+                    <span>Индивидуальные условия</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Для постоянных оптовых клиентов и регулярных поставок доступны специальные графики оплат, фиксирование цен на объём и возможность отсрочки платежа до 14–30 дней.
+                    Для постоянных оптовых покупателей действуют индивидуальные условия сотрудничества (ИУС).
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>Минимальный заказ от 1 шт. или заводской упаковки</span>
+            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-end text-xs text-slate-500">
               <span className="font-semibold text-[#162330]">Без скрытых комиссий</span>
             </div>
           </div>
@@ -97,7 +86,7 @@ export default function PaymentPage() {
               </div>
               <h2 className="text-2xl font-bold text-[#162330] mb-3">Варианты доставки</h2>
               <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                Отгружаем заказы со склада в Санкт-Петербурге каждый рабочий день. Подбираем оптимальный и экономичный маршрут доставки в зависимости от объёма и веса груза.
+                Отгружаем заказы со склада в г. Санкт-Петербург. Подбираем оптимальный и экономичный маршрут доставки в зависимости от объёма и веса груза.
               </p>
 
               <div className="space-y-4">
@@ -107,7 +96,7 @@ export default function PaymentPage() {
                     <span>Бесплатный самовывоз со склада</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Санкт-Петербург, складской комплекс НАМПАК. Пн–Пт с 09:00 до 18:00. Бесплатная погрузка паллет и коробок в ваш транспорт (легковой, газель, фура).
+                    г. Санкт-Петербург, адрес склада: г. Петергоф, Ропшинское шоссе, 8Г. Пн–Пт с 09:00 до 18:00. Бесплатная погрузка паллет и коробок в ваш транспорт (легковой, газель, фура).
                   </p>
                 </div>
 
@@ -117,17 +106,7 @@ export default function PaymentPage() {
                     <span>Доставка транспортными компаниями по РФ</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Отправляем заказы по всей территории России: Деловые Линии, ПЭК, СДЭК, Возовоз, Байкал Сервис, КИТ и др. До терминала ТК в Санкт-Петербурге доставляем оперативно.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/70">
-                  <div className="flex items-center gap-2 mb-1.5 font-bold text-sm text-[#162330]">
-                    <Package className="w-4 h-4 text-[#162330]" />
-                    <span>Попутный и выделенный транспорт (Еврофуры)</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Для крупных оптовых партий гофротары (от 5000 до 50 000+ коробок) привлекаем проверенный попутный транспорт через биржу грузоперевозок, что снижает стоимость доставки до 40% по сравнению с ТК.
+                    г. Санкт-Петербург. Отправляем заказы по всей территории России: Деловые Линии, ПЭК, СДЭК, Возовоз, Байкал Сервис, КИТ и др. Отгрузка и доставка день в день не осуществляется.
                   </p>
                 </div>
               </div>
@@ -181,7 +160,7 @@ export default function PaymentPage() {
               <span className="text-2xl font-black text-[#C59B6D] mb-2 block">03</span>
               <h3 className="font-bold text-white text-base mb-1.5">Оплата счёта</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Оплата безналичным расчётом по счёту (с НДС / без НДС) или СБП. Резервируем товар на складе.
+                Оплата безналичным расчётом по счёту. Резервируем товар на складе.
               </p>
             </div>
 

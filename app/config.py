@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     admin_email: str = ""
 
+    # Telegram Bot Notifications
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
+
     # CDEK Logistics (отключена — оставлена для совместимости, все поля опциональны)
     cdek_account: str = ""
     cdek_secure_password: str = ""

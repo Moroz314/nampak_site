@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 import sqlalchemy as sa
 from app.config import get_settings
 from app.database import Base, engine
-from app.routers import categories, products, cart, checkout, orders
+from app.routers import categories, products, cart, checkout, orders, inquiries
 from app.routers import auth
 from app.routers import articles as public_articles
 from app.routers import gallery  as public_gallery
@@ -68,6 +68,21 @@ async def lifespan(app: FastAPI):
                 )
                 await conn.execute(
                     sa.text("CREATE INDEX IF NOT EXISTS ix_categories_sort_order ON categories (sort_order);")
+                )
+                # НАМПАК: удаление выведенной категории термоэтикетки из БД при запуске
+                await conn.execute(
+                    sa.text("DELETE FROM products WHERE slug = 'termoetiketki-eko-v-rulonah';")
+                )
+                await conn.execute(
+                    sa.text("DELETE FROM categories WHERE slug = 'termoetiketki';")
+                )
+                # НАМПАК: корректировка текстов в статьях новостей
+                await conn.execute(
+                    sa.text("""
+                        UPDATE articles
+                        SET content = REPLACE(content, 'Отгрузка возможна в день заказа!', '')
+                        WHERE content LIKE '%Отгрузка возможна в день заказа!%';
+                    """)
                 )
                 await conn.execute(
                     sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_cost NUMERIC(10, 2) DEFAULT 0.00;")
@@ -244,6 +259,8 @@ app.include_router(categories.router,        prefix="/api/categories", tags=["Ca
 app.include_router(products.router,          prefix="/api/products",   tags=["Products"])
 app.include_router(cart.router,              prefix="/api/cart",       tags=["Cart"])
 app.include_router(checkout.router,          prefix="/api/checkout",   tags=["Checkout"])
+app.include_router(inquiries.router,         prefix="/api/inquiries",  tags=["Inquiries"])
+app.include_router(inquiries.router,         prefix="/api/feedback",   tags=["Inquiries (alias)"])
 app.include_router(public_articles.router,   prefix="/api/articles",   tags=["Articles"])
 app.include_router(public_articles.router,   prefix="/api/content/articles", tags=["Articles (alias)"])
 app.include_router(public_gallery.router,    prefix="/api/gallery",    tags=["Gallery"])

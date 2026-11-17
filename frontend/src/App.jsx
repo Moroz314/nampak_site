@@ -37,8 +37,8 @@ export default function App() {
           element={
             <Layout>
               <Routes>
-                <Route path="/"          element={<Catalog />} />
-                <Route path="/catalog"   element={<Navigate to="/" replace />} />
+                <Route path="/"          element={<Catalog showHero={true} />} />
+                <Route path="/catalog"   element={<Catalog showHero={false} />} />
                 <Route path="/about"     element={<AboutPage />} />
                 <Route path="/workshop"  element={<Navigate to="/about" replace />} />
                 <Route path="/news"      element={

@@ -28,11 +28,12 @@ function TelegramIcon({ className = 'w-5 h-5' }) {
 }
 
 /* ── Иконка Max Messenger ─────────────────────────────────────────────────── */
-function MaxIcon({ className = 'w-5 h-5' }) {
+function MaxIcon({ className = 'w-4 h-4' }) {
   return (
-    <span className={`inline-flex items-center justify-center font-black rounded text-[11px] font-mono leading-none bg-[#162330] text-white px-1.5 py-1 ${className}`}>
-      MAX
-    </span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M8 10h.01M12 10h.01M16 10h.01" />
+    </svg>
   )
 }
 
@@ -48,13 +49,22 @@ export default function ContactsPage() {
       .catch(() => { /* default */ })
   }, [])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
-    setTimeout(() => {
-      setSubmitting(false)
+    try {
+      await api.post('/inquiries/', {
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        company: form.company.trim() || null,
+        message: form.message.trim() || null,
+      })
       setSent(true)
-    }, 600)
+    } catch {
+      setSent(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -100,9 +110,10 @@ export default function ContactsPage() {
                   <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Многоканальный</div>
                   <a
                     href={`tel:${s.contact_phone1.replace(/\D/g, '')}`}
-                    className="text-xl md:text-2xl font-black text-[#162330] hover:text-[#C59B6D] transition-colors block"
+                    className="text-base sm:text-lg font-bold text-[#162330] hover:text-[#C59B6D] transition-colors flex items-center gap-2"
                   >
-                    {s.contact_phone1}
+                    <Phone className="w-4 h-4 text-[#C59B6D] shrink-0" />
+                    <span>{s.contact_phone1}</span>
                   </a>
                 </div>
 
@@ -111,9 +122,10 @@ export default function ContactsPage() {
                     <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Дополнительный</div>
                     <a
                       href={`tel:${s.contact_phone2.replace(/\D/g, '')}`}
-                      className="text-lg font-bold text-slate-800 hover:text-[#C59B6D] transition-colors block"
+                      className="text-base sm:text-lg font-bold text-[#162330] hover:text-[#C59B6D] transition-colors flex items-center gap-2"
                     >
-                      {s.contact_phone2}
+                      <Phone className="w-4 h-4 text-[#C59B6D] shrink-0" />
+                      <span>{s.contact_phone2}</span>
                     </a>
                   </div>
                 )}
@@ -122,10 +134,10 @@ export default function ContactsPage() {
                   <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Электронная почта</div>
                   <a
                     href={`mailto:${s.contact_email}`}
-                    className="text-base font-semibold text-slate-700 hover:text-[#C59B6D] transition-colors flex items-center gap-2"
+                    className="text-base sm:text-lg font-bold text-[#162330] hover:text-[#C59B6D] transition-colors flex items-center gap-2"
                   >
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    {s.contact_email}
+                    <Mail className="w-4 h-4 text-[#C59B6D] shrink-0" />
+                    <span>{s.contact_email}</span>
                   </a>
                 </div>
               </div>
@@ -148,9 +160,9 @@ export default function ContactsPage() {
                   href={s.social_max}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 text-slate-700 hover:bg-[#162330] hover:text-white transition-all text-xs font-bold"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all text-xs font-bold"
                 >
-                  <MaxIcon />
+                  <MaxIcon className="w-4 h-4 text-indigo-500" />
                   <span>Max</span>
                 </a>
               </div>
@@ -220,7 +232,7 @@ export default function ContactsPage() {
               </div>
               <h2 className="text-lg font-bold text-[#162330] mb-2">Реквизиты для юрлиц</h2>
               <p className="text-xs text-slate-500 mb-5">
-                Работаем по безналичному расчету с НДС и без НДС с оформлением полного пакета документов
+                Работаем по безналичному расчету с оформлением полного пакета документов
               </p>
 
               <div className="space-y-3 bg-[#F8FAFC] rounded-xl p-4 border border-slate-200/60 font-mono text-xs">
@@ -263,10 +275,10 @@ export default function ContactsPage() {
           <div className="max-w-2xl mx-auto text-center mb-8">
             <span className="text-xs font-bold uppercase tracking-wider text-[#C59B6D]">Быстрый запрос</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#162330] mt-1 mb-3">
-              Получить расчет стоимости тиража
+              Индивидуальный запрос на расчет / изготовление пакетов / коробов / скотча с лого
             </h2>
             <p className="text-slate-600 text-sm">
-              Укажите необходимые размеры коробок или пакетов, желаемый объем партии и нанесение логотипа. Менеджер подготовит индивидуальное коммерческое предложение в течение 30 минут.
+              Укажите необходимые размеры коробок или пакетов, желаемый объем партии и нанесение логотипа. Менеджер подготовит индивидуальное коммерческое предложение.
             </p>
           </div>
 
@@ -359,6 +371,22 @@ export default function ContactsPage() {
                 <p className="text-[11px] text-slate-400 text-center mt-2">
                   Нажимая кнопку, вы соглашаетесь с условиями <Link to="/privacy" className="underline hover:text-slate-600">политики конфиденциальности</Link>
                 </p>
+              </div>
+
+              {/* Прямая ссылка в Telegram для дублирования запроса */}
+              <div className="pt-4 mt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                <span className="text-xs text-slate-500 font-medium">
+                  Хотите обсудить заказ мгновенно?
+                </span>
+                <a
+                  href={s.social_tg || 'https://t.me/namupak'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-50 hover:bg-sky-500 text-sky-700 hover:text-white transition-all text-xs font-bold border border-sky-200/60 shadow-xs"
+                >
+                  <TelegramIcon className="w-4 h-4 text-sky-500 hover:text-white" />
+                  <span>Написать менеджеру в Telegram →</span>
+                </a>
               </div>
             </form>
           )}

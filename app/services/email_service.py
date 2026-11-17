@@ -351,6 +351,24 @@ def send_new_order_email(order_data: dict[str, Any]) -> None:
             exc_info=True,
         )
 
+    # Оповещение в Telegram (при наличии токена и chat_id в .env)
+    try:
+        from app.services.telegram_service import send_telegram_message
+        tg_text = (
+            f"📦 <b>Новая заявка #{order_id} (НАМПАК)</b>\n\n"
+            f"👤 <b>Клиент:</b> {order_data.get('customer_name')}\n"
+            f"📞 <b>Телефон:</b> {order_data.get('customer_phone')}\n"
+            f"✉️ <b>Email:</b> {order_data.get('customer_email') or '—'}\n"
+            f"🏢 <b>Организация:</b> {order_data.get('company_name') or '—'}\n"
+            f"🚚 <b>Доставка:</b> {order_data.get('delivery_type') or '—'}\n"
+            f"📍 <b>Адрес:</b> {order_data.get('delivery_address') or '—'}\n"
+            f"💰 <b>Сумма:</b> {_format_price(order_data.get('total_amount', 0))}\n"
+            f"💬 <b>Комментарий:</b> {order_data.get('comment') or '—'}\n"
+        )
+        send_telegram_message(tg_text)
+    except Exception as exc:
+        logger.warning("Не удалось отправить уведомление в Telegram о заказе %s: %s", order_id, exc)
+
 
 # ── Отправка писем после оплаты и оформления СДЭК ───────────────────────────
 

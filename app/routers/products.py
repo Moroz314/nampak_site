@@ -1,3 +1,5 @@
+import re
+import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +9,30 @@ from app.models import Product, Review
 from app.schemas import ProductListRead, ProductRead, ReviewCreate, ReviewRead
 
 router = APIRouter()
+
+
+def get_search_variants(query: str) -> list[str]:
+    """Генерирует варианты поискового запроса для поиска по габаритам и тексту.
+    Нормализует разделители: *, ×, латинскую x и русскую х с пробелами и без.
+    """
+    raw = query.strip()
+    if not raw:
+        return []
+    variants = {raw}
+
+    # Варианты нормализации разделителей размеров
+    norm_mult = re.sub(r'[\*xXхХ×]', '×', raw)
+    norm_tight = re.sub(r'\s*×\s*', '×', norm_mult)
+    norm_star = re.sub(r'[\*xXхХ×]', '*', raw)
+    norm_star_tight = re.sub(r'\s*\*\s*', '*', norm_star)
+    norm_x = re.sub(r'[\*xXхХ×]', 'x', raw)
+    norm_cyr = re.sub(r'[\*xXхХ×]', 'х', raw)
+
+    for v in (norm_mult, norm_tight, norm_star, norm_star_tight, norm_x, norm_cyr):
+        cleaned = v.strip()
+        if cleaned:
+            variants.add(cleaned)
+    return list(variants)
 
 
 @router.get(
@@ -23,15 +49,28 @@ async def get_products(
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
 ) -> list[Product]:
-    stmt = select(Product).order_by(Product.sort_order.asc(), Product.id.asc())
+    stmt = (
+        select(Product)
+        .where(Product.slug != "termoetiketki-eko-v-rulonah")
+        .order_by(Product.sort_order.asc(), Product.id.asc())
+    )
     if category_id is not None:
         stmt = stmt.where(Product.category_id == category_id)
     if in_stock is not None:
         stmt = stmt.where(Product.in_stock == in_stock)
     search_query = search or q
     if search_query and search_query.strip():
-        term = f"%{search_query.strip()}%"
-        stmt = stmt.where(Product.name.ilike(term) | Product.description.ilike(term))
+        variants = get_search_variants(search_query)
+        conditions = []
+        for v in variants:
+            term = f"%{v}%"
+            conditions.extend([
+                Product.name.ilike(term),
+                Product.description.ilike(term),
+                Product.dimensions_mm.ilike(term),
+                Product.material_specs.ilike(term),
+            ])
+        stmt = stmt.where(sa.or_(*conditions))
     stmt = stmt.limit(limit).offset(offset)
     result = await db.execute(stmt)
     return result.scalars().all()

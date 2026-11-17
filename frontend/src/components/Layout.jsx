@@ -84,7 +84,7 @@ const DEFAULT_SETTINGS = {
 }
 
 const NAV_MENU_ITEMS = [
-  { to: '/',         label: 'Каталог' },
+  { to: '/',         label: 'Главная' },
   { to: '/about',    label: 'О компании' },
   { to: '/payment',  label: 'Оплата и доставка' },
   { to: '/training', label: 'Обучение' },
@@ -117,23 +117,25 @@ function TopBar({ settings }) {
             href={tgUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-slate-600 hover:text-sky-600 transition-colors"
+            aria-label="Telegram"
+            title="Telegram"
+            className="p-1 text-slate-600 hover:text-sky-600 transition-colors"
           >
-            <TgIcon className="w-3.5 h-3.5 text-sky-500" />
-            <span>Telegram</span>
+            <TgIcon className="w-4 h-4 text-sky-500 hover:scale-110 transition-transform" />
           </a>
           <a
             href={maxUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-slate-600 hover:text-indigo-600 transition-colors"
+            aria-label="Max"
+            title="Max"
+            className="p-1 text-slate-600 hover:text-indigo-600 transition-colors"
           >
-            <MaxIcon className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Max</span>
+            <MaxIcon className="w-4 h-4 text-indigo-500 hover:scale-110 transition-transform" />
           </a>
           <a
             href={`mailto:${email}`}
-            className="text-slate-600 hover:text-nampack-dark transition-colors hidden md:inline"
+            className="text-slate-600 hover:text-nampack-dark transition-colors hidden md:inline ml-1"
           >
             {email}
           </a>
@@ -163,15 +165,22 @@ function MainHeader({ settings, onOpenMobileMenu }) {
     setSearchQuery(q)
   }, [location.search])
 
+  const normalizeSearch = (str) => {
+    return (str || '')
+      .replace(/\s*[\*xXхХ×]\s*/g, '×')
+      .trim()
+  }
+
   const handleSearchSubmit = (e) => {
     e?.preventDefault()
-    const q = searchQuery.trim()
-    navigate(q ? `/?search=${encodeURIComponent(q)}` : '/')
+    const q = normalizeSearch(searchQuery)
+    navigate(q ? `/catalog?search=${encodeURIComponent(q)}` : '/catalog')
   }
 
   const handleHintClick = (hintText) => {
-    setSearchQuery(hintText)
-    navigate(`/?search=${encodeURIComponent(hintText)}`)
+    const q = normalizeSearch(hintText)
+    setSearchQuery(q)
+    navigate(`/catalog?search=${encodeURIComponent(q)}`)
   }
 
   const phone1 = settings.contact_phone1 || DEFAULT_SETTINGS.contact_phone1
@@ -195,7 +204,7 @@ function MainHeader({ settings, onOpenMobileMenu }) {
                 src="/logo-nampack.png"
                 alt="НАМПАК"
                 onError={() => setLogoError(true)}
-                className="w-10 h-10 sm:w-11 sm:h-11 md:w-13 md:h-13 rounded-lg object-contain shadow-xs border border-slate-100"
+                className="w-10 h-10 sm:w-11 sm:h-11 md:w-16 md:h-16 rounded-lg object-contain shadow-xs border border-slate-100"
               />
             ) : (
               <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-13 md:h-13 rounded-lg bg-[#162330] text-[#C59B6D] font-extrabold flex items-center justify-center text-base sm:text-lg shadow-xs">
@@ -288,15 +297,6 @@ function MainHeader({ settings, onOpenMobileMenu }) {
                 {phone2}
               </a>
             )}
-            <a
-              href={tgUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1 mt-0.5"
-            >
-              <TgIcon className="w-3 h-3" />
-              <span>Написать в Telegram</span>
-            </a>
           </div>
 
           {/* ── КНОПКА КОРЗИНЫ И МОБИЛЬНОЕ МЕНЮ ────────────────── */}
@@ -366,10 +366,7 @@ function Navbar() {
   const navigate = useNavigate()
 
   const handleCatalogClick = () => {
-    navigate('/')
-    // плавная прокрутка к блоку каталога если уже на главной
-    const el = document.getElementById('catalog-section')
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
+    navigate('/catalog')
   }
 
   return (
@@ -440,11 +437,10 @@ function Footer({ settings }) {
                 Каталог упаковки
               </h4>
               <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-                <li><Link to="/?search=гофрокороб" className="hover:text-[#C59B6D] transition-colors">Гофрокороба и картон</Link></li>
-                <li><Link to="/?search=курьер-пакет" className="hover:text-[#C59B6D] transition-colors">Курьерские пакеты</Link></li>
-                <li><Link to="/?search=зип-лок" className="hover:text-[#C59B6D] transition-colors">Zip-Lock и БОПП пакеты</Link></li>
-                <li><Link to="/?search=скотч" className="hover:text-[#C59B6D] transition-colors">Скотч и клейкие ленты</Link></li>
-                <li><Link to="/?search=термоэтикетки" className="hover:text-[#C59B6D] transition-colors">Термоэтикетки для складов</Link></li>
+                <li><Link to="/catalog?search=гофрокороб" className="hover:text-[#C59B6D] transition-colors">Гофрокороба и картон</Link></li>
+                <li><Link to="/catalog?search=курьер-пакет" className="hover:text-[#C59B6D] transition-colors">Курьерские пакеты</Link></li>
+                <li><Link to="/catalog?search=зип-лок" className="hover:text-[#C59B6D] transition-colors">Zip-Lock и БОПП пакеты</Link></li>
+                <li><Link to="/catalog?search=скотч" className="hover:text-[#C59B6D] transition-colors">Скотч и клейкие ленты</Link></li>
                 <li><Link to="/training" className="hover:text-[#C59B6D] transition-colors font-semibold text-[#B08455]">Упаковка с логотипом →</Link></li>
               </ul>
             </div>

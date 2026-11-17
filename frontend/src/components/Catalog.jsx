@@ -41,7 +41,6 @@ function getCategoryIcon(name = '') {
   if (n.includes('курьер')) return '✉️'
   if (n.includes('бопп')) return '🛍️'
   if (n.includes('зип') || n.includes('zip')) return '🔒'
-  if (n.includes('этикетк') || n.includes('термо')) return '🏷️'
   return '📦'
 }
 
@@ -146,9 +145,11 @@ function FaqSection() {
 /* ══════════════════════════════════════════════════════════════
    ГЛАВНЫЙ КОМПОНЕНТ CATALOG
    ══════════════════════════════════════════════════════════════ */
-export default function Catalog() {
+export default function Catalog({ showHero = false }) {
   const [searchParams, setSearchParams] = useSearchParams()
-  const searchQuery = searchParams.get('search') || ''
+  const rawSearch = searchParams.get('search') || ''
+  // Нормализуем размеры: 220*165*100 или 220x165x100 -> 220×165×100
+  const searchQuery = rawSearch.replace(/\s*[\*xXхХ×]\s*/g, '×').trim()
 
   const [products, setProducts]             = useState([])
   const [categories, setCategories]         = useState([])
@@ -156,10 +157,10 @@ export default function Catalog() {
   const [loading, setLoading]               = useState(true)
   const [error, setError]                   = useState(null)
 
-  /* Загрузка категорий */
+  /* Загрузка категорий (исключая термоэтикетки) */
   useEffect(() => {
     axios.get('/api/categories/')
-      .then(res => setCategories(res.data))
+      .then(res => setCategories(res.data.filter(c => c.slug !== 'termoetiketki')))
       .catch(() => {})
   }, [])
 
@@ -173,7 +174,7 @@ export default function Catalog() {
       if (query.trim()) params.search = query.trim()
 
       const { data } = await axios.get('/api/products/', { params })
-      setProducts(data)
+      setProducts(data.filter(p => p.slug !== 'termoetiketki-eko-v-rulonah'))
     } catch (err) {
       const msg = err.response
         ? `Ошибка сервера: ${err.response.status}`
@@ -208,7 +209,7 @@ export default function Catalog() {
 
   return (
     <div>
-      <Hero />
+      {showHero && <Hero />}
 
       <section id="catalog-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 scroll-mt-20">
         
