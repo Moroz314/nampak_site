@@ -30,10 +30,11 @@ function TelegramIcon({ className = 'w-5 h-5' }) {
 /* ── Иконка Max Messenger ─────────────────────────────────────────────────── */
 function MaxIcon({ className = 'w-4 h-4' }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      <path d="M8 10h.01M12 10h.01M16 10h.01" />
-    </svg>
+    <img
+      src="https://maxicons.ru/icons/Max_logo.svg"
+      alt="Иконка MAX"
+      className={`${className} object-contain inline-block flex-shrink-0`}
+    />
   )
 }
 
@@ -162,7 +163,7 @@ export default function ContactsPage() {
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all text-xs font-bold"
                 >
-                  <MaxIcon className="w-4 h-4 text-indigo-500" />
+                  <MaxIcon className="w-5 h-5" />
                   <span>Max</span>
                 </a>
               </div>

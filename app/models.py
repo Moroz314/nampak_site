@@ -331,3 +331,19 @@ class SiteSettings(Base):
 
     def __repr__(self) -> str:
         return f"<SiteSettings key={self.key!r}>"
+
+
+# ── FaqItem ───────────────────────────────────────────────────────────────────
+
+class FaqItem(Base):
+    __tablename__ = "faq_items"
+
+    id:         Mapped[int]  = mapped_column(sa.Integer, primary_key=True, index=True)
+    question:   Mapped[str]  = mapped_column(sa.String(512), nullable=False)
+    answer:     Mapped[str]  = mapped_column(sa.Text, nullable=False)
+    sort_order: Mapped[int]  = mapped_column(sa.Integer, nullable=False, default=0, server_default="0", index=True)
+    is_active:  Mapped[bool] = mapped_column(sa.Boolean, nullable=False, default=True, server_default=sa.true(), index=True)
+
+    def __repr__(self) -> str:
+        return f"<FaqItem id={self.id} question={self.question[:30]!r}>"
+

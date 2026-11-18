@@ -52,7 +52,7 @@ export default function AboutPage() {
               Склад в СПб
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              г. Петергоф, Ропшинское шоссе, д. 8Г
+             г. Санкт -Петербург, г.Петергоф, Ропшинское шоссе, д.8Г
             </p>
           </div>
 

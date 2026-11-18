@@ -26,10 +26,11 @@ const TgIcon = ({ className = "w-3.5 h-3.5" }) => (
 )
 
 const MaxIcon = ({ className = "w-3.5 h-3.5" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    <path d="M8 10h.01M12 10h.01M16 10h.01" />
-  </svg>
+  <img
+    src="https://maxicons.ru/icons/Max_logo.svg"
+    alt="Иконка MAX"
+    className={`${className} object-contain inline-block flex-shrink-0`}
+  />
 )
 
 /* Категориальные иконки */
@@ -87,7 +88,32 @@ const FAQ_ITEMS = [
 ]
 
 function FaqSection() {
+  const [items, setItems] = useState(FAQ_ITEMS)
   const [openIndex, setOpenIndex] = useState(0)
+
+  useEffect(() => {
+    let ignore = false
+    const fetchFaq = async () => {
+      try {
+        const res = await axios.get('/api/faq/')
+        if (!ignore && Array.isArray(res.data) && res.data.length > 0) {
+          setItems(
+            res.data.map((it) => ({
+              id: it.id,
+              q: it.question,
+              a: it.answer,
+            }))
+          )
+        }
+      } catch {
+        /* При ошибке сети сохраняются дефолтные вопросы НАМПАК */
+      }
+    }
+    fetchFaq()
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   const toggle = (idx) => {
     setOpenIndex(prev => prev === idx ? -1 : idx)
@@ -109,11 +135,11 @@ function FaqSection() {
         </div>
 
         <div className="space-y-3">
-          {FAQ_ITEMS.map((item, idx) => {
+          {items.map((item, idx) => {
             const isOpen = openIndex === idx
             return (
               <div
-                key={idx}
+                key={item.id ?? idx}
                 className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs transition-all"
               >
                 <button
@@ -129,7 +155,7 @@ function FaqSection() {
                 </button>
 
                 {isOpen && (
-                  <div className="px-6 pb-5 pt-1 text-xs md:text-sm text-slate-600 leading-relaxed border-t border-slate-100 animate-fade-up">
+                  <div className="px-6 pb-5 pt-1 text-xs md:text-sm text-slate-600 leading-relaxed border-t border-slate-100 animate-fade-up whitespace-pre-line">
                     {item.a}
                   </div>
                 )}

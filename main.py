@@ -18,12 +18,14 @@ from app.routers import categories, products, cart, checkout, orders, inquiries
 from app.routers import auth, customer_auth
 from app.routers import articles as public_articles
 from app.routers import gallery  as public_gallery
+from app.routers import faq      as public_faq
 from app.routers.admin import categories as admin_categories
 from app.routers.admin import products  as admin_products
 from app.routers.admin import articles  as admin_articles
 from app.routers.admin import orders    as admin_orders
 from app.routers.admin import upload    as admin_upload
 from app.routers.admin import gallery   as admin_gallery
+from app.routers.admin import faq       as admin_faq
 from app.routers import settings         as public_settings
 from app.routers.admin import settings   as admin_settings
 # НАМПАК: payments и delivery оставлены в качестве заглушек (роутеры импортированы,
@@ -181,6 +183,55 @@ async def lifespan(app: FastAPI):
                 await conn.execute(
                     sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(32) DEFAULT 'delivery';")
                 )
+                # ── НАМПАК: таблица и дефолтные вопросы FAQ ─────────────────────
+                await conn.execute(
+                    sa.text("""
+                        CREATE TABLE IF NOT EXISTS faq_items (
+                            id SERIAL PRIMARY KEY,
+                            question VARCHAR(512) NOT NULL,
+                            answer TEXT NOT NULL,
+                            sort_order INTEGER DEFAULT 0,
+                            is_active BOOLEAN DEFAULT TRUE
+                        );
+                    """)
+                )
+                await conn.execute(
+                    sa.text("CREATE INDEX IF NOT EXISTS ix_faq_items_sort_order ON faq_items (sort_order);")
+                )
+                await conn.execute(
+                    sa.text("CREATE INDEX IF NOT EXISTS ix_faq_items_is_active ON faq_items (is_active);")
+                )
+                faq_count_res = await conn.execute(sa.text("SELECT COUNT(*) FROM faq_items;"))
+                if faq_count_res.scalar() == 0:
+                    default_faqs = [
+                        (
+                            "Как получить оптовую скидку и узнать цену на крупный тираж?",
+                            "При заказе партий от 5 000 – 10 000 шт. для производств, маркетплейсов и оптовых баз действуют специальные дилерские цены со скидкой до 25%. Вы можете отправить заявку через сайт, указав требуемый объём в комментарии, или связаться с менеджером по телефону +7 (993) 117-64-92 — мы оперативно рассчитаем индивидуальное коммерческое предложение с учётом логистики.",
+                            1,
+                        ),
+                        (
+                            "Можно ли изготовить коробки или пакеты по индивидуальным размерам?",
+                            "Да! Мы изготавливаем самосборные и четырёхклапанные гофрокороба любых размеров из трёхслойного картона марок Т-21, Т-22, Т-23, Т-24 (бурый и белый). Срок производства индивидуальной партии со штанцформой составляет от 3 до 5 рабочих дней.",
+                            2,
+                        ),
+                        (
+                            "Можно ли нанести наш логотип на упаковку и скотч?",
+                            "Да, НАМПАК выполняет профессиональное брендирование: качественная флексопечать на коробках, курьер-пакетах, БОПП и Zip-Lock пакетах с бегунком, а также изготовление брендированного скотча с вашим логотипом и контактными данными. Минимальный тираж брендирования — от 2 000 шт.",
+                            3,
+                        ),
+                        (
+                            "Как происходит оплата и доставка заказов?",
+                            "Мы работаем с юридическими лицами (с НДС и без НДС), ИП и физическими лицами по всей территории России. После отправки заявки на сайте наш менеджер связывается с вами в течение 15–30 минут, подтверждает параметры, согласует удобную транспортную компанию (Деловые Линии, ПЭК, СДЭК, попутный транспорт) и выставляет официальный счёт. Также возможен бесплатный самовывоз со склада.",
+                            4,
+                        ),
+                    ]
+                    for q, a, order in default_faqs:
+                        await conn.execute(
+                            sa.text(
+                                "INSERT INTO faq_items (question, answer, sort_order, is_active) VALUES (:q, :a, :order, TRUE);"
+                            ),
+                            {"q": q, "a": a, "order": order},
+                        )
             # Добавляем новые значения в enum order_status (вне транзакции)
             try:
                 async with engine.connect() as auto_conn:
@@ -271,6 +322,7 @@ app.include_router(inquiries.router,         prefix="/api/feedback",   tags=["In
 app.include_router(public_articles.router,   prefix="/api/articles",   tags=["Articles"])
 app.include_router(public_articles.router,   prefix="/api/content/articles", tags=["Articles (alias)"])
 app.include_router(public_gallery.router,    prefix="/api/gallery",    tags=["Gallery"])
+app.include_router(public_faq.router,        prefix="/api/faq",        tags=["FAQ"])
 app.include_router(orders.router,            prefix="/api/orders",     tags=["Orders"])
 # НАМПАК: payments и delivery — отключены (работа через менеджера).
 # Роутеры импортированы выше через `import app.routers.payments/delivery`,
@@ -285,6 +337,7 @@ app.include_router(admin_articles.router,    prefix="/api/admin/articles",   tag
 app.include_router(admin_orders.router,      prefix="/api/admin/orders",     tags=["Admin · Orders"])
 app.include_router(admin_upload.router,      prefix="/api/admin/upload",     tags=["Admin · Upload"])
 app.include_router(admin_gallery.router,     prefix="/api/admin/gallery",    tags=["Admin · Gallery"])
+app.include_router(admin_faq.router,         prefix="/api/admin/faq",        tags=["Admin · FAQ"])
 app.include_router(public_settings.router,   prefix="/api/settings",         tags=["Settings"])
 app.include_router(admin_settings.router,    prefix="/api/admin/settings",   tags=["Admin · Settings"])
 

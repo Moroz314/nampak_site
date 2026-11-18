@@ -33,10 +33,11 @@ const TgIcon = ({ className = "w-4 h-4" }) => (
 )
 
 const MaxIcon = ({ className = "w-4 h-4" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    <path d="M8 10h.01M12 10h.01M16 10h.01" />
-  </svg>
+  <img
+    src="https://maxicons.ru/icons/Max_logo.svg"
+    alt="Иконка MAX"
+    className={`${className} object-contain inline-block flex-shrink-0`}
+  />
 )
 
 const PhoneIcon = ({ className = "w-4 h-4" }) => (
@@ -214,7 +215,7 @@ export default function OrderSuccessPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
               >
-                <MaxIcon className="w-4 h-4" />
+                <MaxIcon className="w-5 h-5" />
                 <span>Написать в Max</span>
               </a>
 

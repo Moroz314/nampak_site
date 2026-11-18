@@ -385,3 +385,39 @@ class CustomerTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: CustomerProfileRead
+
+
+# ── FAQ (Частые вопросы) ──────────────────────────────────────────────────────
+
+class FaqBase(BaseModel):
+    question:   str = Field(..., max_length=512)
+    answer:     str = Field(...)
+    sort_order: int = Field(default=0)
+    is_active:  bool = Field(default=True)
+
+
+class FaqCreate(FaqBase):
+    pass
+
+
+class FaqUpdate(BaseModel):
+    question:   str | None = Field(default=None, max_length=512)
+    answer:     str | None = None
+    sort_order: int | None = None
+    is_active:  bool | None = None
+
+
+class FaqRead(FaqBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
+class FaqReorderItem(BaseModel):
+    id: int
+    sort_order: int
+
+
+class FaqReorderRequest(BaseModel):
+    items: list[FaqReorderItem]
+

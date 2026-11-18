@@ -1,11 +1,12 @@
 import { NavLink, useNavigate, Link } from 'react-router-dom'
-import { Package, ShoppingBag, FileText, Image as ImageIcon, LogOut, Settings, ExternalLink } from 'lucide-react'
+import { Package, ShoppingBag, FileText, Image as ImageIcon, LogOut, Settings, ExternalLink, HelpCircle } from 'lucide-react'
 import { clearToken } from '../../api/axios'
 
 const NAV = [
   { to: '/admin/products', label: 'Товары',    Icon: Package     },
   { to: '/admin/orders',   label: 'Заявки',    Icon: ShoppingBag },
   { to: '/admin/content',  label: 'Статьи',    Icon: FileText    },
+  { to: '/admin/faq',      label: 'FAQ',       Icon: HelpCircle  },
   { to: '/admin/gallery',  label: 'Галерея',   Icon: ImageIcon   },
   { to: '/admin/settings', label: 'Настройки', Icon: Settings    },
 ]

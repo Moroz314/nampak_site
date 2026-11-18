@@ -60,10 +60,11 @@ const TgIcon = ({ className = "w-4 h-4" }) => (
 )
 
 const MaxIcon = ({ className = "w-4 h-4" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    <path d="M8 10h.01M12 10h.01M16 10h.01" />
-  </svg>
+  <img
+    src="https://maxicons.ru/icons/Max_logo.svg"
+    alt="Иконка MAX"
+    className={`${className} object-contain inline-block flex-shrink-0`}
+  />
 )
 
 const PhoneIcon = ({ className = "w-4 h-4" }) => (
@@ -611,7 +612,7 @@ function Footer({ settings }) {
                 className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 py-2.5 text-xs font-semibold
                            flex items-center justify-center gap-1.5 transition-colors shadow-sm"
               >
-                <MaxIcon className="w-4 h-4" />
+                <MaxIcon className="w-5 h-5" />
                 <span>Max</span>
               </a>
             </div>
@@ -825,9 +826,10 @@ function MobileMenuDrawer({ isOpen, onClose, settings }) {
               href={maxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-indigo-600 text-white text-xs py-2 rounded-lg font-medium text-center"
+              className="bg-indigo-600 text-white text-xs py-2 rounded-lg font-medium flex items-center justify-center gap-1.5"
             >
-              Max
+              <MaxIcon className="w-4 h-4" />
+              <span>Max</span>
             </a>
           </div>
         </div>

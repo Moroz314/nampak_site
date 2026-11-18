@@ -22,6 +22,7 @@ import AdminProducts     from './pages/admin/AdminProducts'
 import AdminOrders       from './pages/admin/AdminOrders'
 import AdminContent      from './pages/admin/AdminContent'
 import AdminGallery      from './pages/admin/AdminGallery'
+import AdminFaq          from './pages/admin/AdminFaq'
 import AdminSiteSettings from './pages/admin/AdminSiteSettings'
 
 /* ── Protected route ──────────────────────────────────────── */
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/admin/products" element={<PrivateRoute><AdminProducts /></PrivateRoute>} />
         <Route path="/admin/orders"   element={<PrivateRoute><AdminOrders /></PrivateRoute>} />
         <Route path="/admin/content"  element={<PrivateRoute><AdminContent /></PrivateRoute>} />
+        <Route path="/admin/faq"      element={<PrivateRoute><AdminFaq /></PrivateRoute>} />
         <Route path="/admin/gallery"  element={<PrivateRoute><AdminGallery /></PrivateRoute>} />
         <Route path="/admin/settings" element={<PrivateRoute><AdminSiteSettings /></PrivateRoute>} />
         <Route path="/admin"          element={<Navigate to="/admin/products" replace />} />
