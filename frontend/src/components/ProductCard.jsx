@@ -83,8 +83,8 @@ export default function ProductCard({ product }) {
         {/* Бейджи поверх фото */}
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1 pointer-events-none">
           {product.is_custom_design ? (
-            <span className="bg-[#162330] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-              Печать лого
+            <span className="bg-[#162330] text-[#E8D8C5] border border-[#C59B6D]/40 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+              Печать логотипа
             </span>
           ) : <span />}
 

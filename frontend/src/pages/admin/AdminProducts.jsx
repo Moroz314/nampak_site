@@ -390,23 +390,35 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         </div>
 
         {/* Возможность нанесения логотипа / под заказ */}
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
-          <div>
-            <span className="font-bold text-sm text-[#162330] block">Возможно нанесение логотипа / изготовление под заказ</span>
+        <div
+          onClick={() => setForm(f => ({ ...f, is_custom_design: !f.is_custom_design }))}
+          className="p-4 bg-slate-50 hover:bg-slate-100/70 rounded-2xl border border-slate-200/80 flex items-center justify-between cursor-pointer transition-colors"
+        >
+          <div className="select-none">
+            <span className="font-bold text-sm text-[#162330] block">
+              Возможно нанесение логотипа / изготовление под заказ
+            </span>
             <p className="text-xs text-slate-500 mt-0.5">
               В карточке товара появится бейдж «Возможна печать логотипа» и форма спецзаказа
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setForm(f => ({ ...f, is_custom_design: !f.is_custom_design }))}
-            className={`relative w-13 h-7 rounded-full transition-colors duration-200 ml-4 shrink-0 ${
+            role="switch"
+            aria-checked={Boolean(form.is_custom_design)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setForm(f => ({ ...f, is_custom_design: !f.is_custom_design }))
+            }}
+            className={`relative w-14 h-7 rounded-full transition-colors duration-200 ml-4 shrink-0 cursor-pointer ${
               form.is_custom_design ? 'bg-[#C59B6D]' : 'bg-slate-300'
             }`}
           >
-            <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform duration-200 ${
-              form.is_custom_design ? 'translate-x-6' : 'translate-x-0'
-            }`} />
+            <span
+              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                form.is_custom_design ? 'translate-x-7' : 'translate-x-0'
+              }`}
+            />
           </button>
         </div>
 

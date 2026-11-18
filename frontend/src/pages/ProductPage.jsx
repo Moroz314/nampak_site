@@ -185,8 +185,8 @@ export default function ProductPage() {
               {/* Бейджи */}
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
                 {product.is_custom_design ? (
-                  <span className="bg-[#162330] text-white text-xs font-heading font-bold px-3 py-1 rounded-lg shadow-sm">
-                    🎨 Печать логотипа
+                  <span className="bg-[#162330] text-[#E8D8C5] border border-[#C59B6D]/40 text-xs font-heading font-bold px-3 py-1 rounded-lg shadow-sm">
+                    🎨 Возможна печать логотипа
                   </span>
                 ) : <span />}
 
