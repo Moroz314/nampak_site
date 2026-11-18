@@ -290,64 +290,77 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Шкала оптовых цен в зависимости от тиража (как на референсе) */}
-            {tiers.length >= 2 && (
-              <div className="bg-[#FAF5EF]/60 rounded-2xl border border-[#E8D8C5] p-5 shadow-xs space-y-2.5">
-                <div className="flex items-center justify-between pb-1 border-b border-[#E8D8C5]/70">
-                  <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#926435] flex items-center gap-1.5">
-                    <span>📊</span>
-                    <span>Градация цен от тиража</span>
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
-                    Кликните на строку для выбора объёма
-                  </span>
-                </div>
+            {/* Шкала оптовых цен от тиража — показываем всегда (базовая + тиры) */}
+            {(() => {
+              // Строки для таблицы: базовая цена (1 шт.) + все оптовые тиры
+              const firstTierIsOne = tiers.length > 0 && tiers[0].min_qty <= 1
+              const priceRows = firstTierIsOne
+                ? tiers
+                : [{ min_qty: 1, price: numBasePrice, _isBase: true }, ...tiers]
+              // Определяем активную строку
+              const activeMinQty = activeTier?.min_qty ?? null
 
-                <div className="space-y-1.5 pt-1">
-                  {tiers.map((tier) => {
-                    const isActive = activeTier?.min_qty === tier.min_qty
-                    const tierPriceFormatted = tier.price.toLocaleString('ru-RU', {
-                      minimumFractionDigits: tier.price % 1 === 0 ? 0 : 2,
-                      maximumFractionDigits: 2,
-                    }) + ' ₽'
+              return (
+                <div className="bg-[#FAF5EF]/60 rounded-2xl border border-[#E8D8C5] p-5 shadow-xs space-y-2.5">
+                  <div className="flex items-center justify-between pb-1 border-b border-[#E8D8C5]/70">
+                    <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#926435] flex items-center gap-1.5">
+                      <span>📊</span>
+                      <span>Цена в зависимости от тиража</span>
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
+                      Кликните на строку для выбора объёма
+                    </span>
+                  </div>
 
-                    return (
-                      <div
-                        key={tier.min_qty}
-                        onClick={() => setQuantity(tier.min_qty)}
-                        className={`group flex items-center justify-between p-2.5 rounded-xl transition-all cursor-pointer select-none ${
-                          isActive
-                            ? 'bg-white border-2 border-[#C59B6D] shadow-sm font-bold text-[#162330]'
-                            : 'hover:bg-white/80 border border-transparent text-slate-700'
-                        }`}
-                        title={`Выбрать партию от ${tier.min_qty} шт.`}
-                      >
-                        <div className="flex items-center gap-2 min-w-max">
-                          <span className={`w-2 h-2 rounded-full transition-colors ${isActive ? 'bg-[#C59B6D]' : 'bg-slate-300'}`} />
-                          <span className="text-xs sm:text-sm">
-                            от <strong>{tier.min_qty.toLocaleString('ru-RU')}</strong> шт.
-                          </span>
-                        </div>
+                  <div className="space-y-1.5 pt-1">
+                    {priceRows.map((row) => {
+                      // Базовая строка активна когда нет активного тира (qty < первого тира)
+                      const isActive = row._isBase
+                        ? activeMinQty === null
+                        : activeMinQty === row.min_qty
+                      const rowPriceFormatted = row.price.toLocaleString('ru-RU', {
+                        minimumFractionDigits: row.price % 1 === 0 ? 0 : 2,
+                        maximumFractionDigits: 2,
+                      }) + ' ₽'
 
-                        {/* Точечная пунктирная линия между объёмом и ценой */}
-                        <div className="flex-1 mx-2 sm:mx-3 border-b-2 border-dotted border-slate-300" />
-
-                        <div className="flex items-center gap-2 min-w-max">
-                          <span className={`text-xs sm:text-sm font-heading ${isActive ? 'text-[#C59B6D] font-extrabold' : 'text-[#162330] font-semibold'}`}>
-                            {tierPriceFormatted} <span className="text-[10px] sm:text-[11px] font-normal text-slate-400">/ шт.</span>
-                          </span>
-                          {isActive && (
-                            <span className="text-[10px] bg-[#C59B6D] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                              Выбрано
+                      return (
+                        <div
+                          key={row.min_qty}
+                          onClick={() => setQuantity(row.min_qty)}
+                          className={`group flex items-center justify-between p-2.5 rounded-xl transition-all cursor-pointer select-none ${
+                            isActive
+                              ? 'bg-white border-2 border-[#C59B6D] shadow-sm font-bold text-[#162330]'
+                              : 'hover:bg-white/80 border border-transparent text-slate-700'
+                          }`}
+                          title={`Выбрать партию от ${row.min_qty} шт.`}
+                        >
+                          <div className="flex items-center gap-2 min-w-max">
+                            <span className={`w-2 h-2 rounded-full transition-colors ${isActive ? 'bg-[#C59B6D]' : 'bg-slate-300'}`} />
+                            <span className="text-xs sm:text-sm">
+                              от <strong>{Number(row.min_qty).toLocaleString('ru-RU')}</strong> шт.
                             </span>
-                          )}
+                          </div>
+
+                          {/* Пунктирная линия */}
+                          <div className="flex-1 mx-2 sm:mx-3 border-b-2 border-dotted border-slate-300" />
+
+                          <div className="flex items-center gap-2 min-w-max">
+                            <span className={`text-xs sm:text-sm font-heading ${isActive ? 'text-[#C59B6D] font-extrabold' : 'text-[#162330] font-semibold'}`}>
+                              {rowPriceFormatted} <span className="text-[10px] sm:text-[11px] font-normal text-slate-400">/ шт.</span>
+                            </span>
+                            {isActive && (
+                              <span className="text-[10px] bg-[#C59B6D] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                Выбрано
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Таблица характеристик упаковки */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
