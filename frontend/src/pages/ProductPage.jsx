@@ -89,10 +89,11 @@ export default function ProductPage() {
       .sort((a, b) => a.min_qty - b.min_qty)
   }, [product?.price_tiers])
 
-  // Активный уровень цен для текущего выбранного объёма
+  // Активный уровень цен для текущего выбранного объёма.
+  // chosen остаётся null, если quantity меньше самого первого порога.
   const activeTier = useMemo(() => {
     if (!tiers.length) return null
-    let chosen = tiers[0]
+    let chosen = null
     for (const t of tiers) {
       if (t.min_qty <= quantity) {
         chosen = t

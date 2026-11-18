@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { addToCart, selectAdding, selectSessionId } from '../store/cartSlice'
+import { addToCart, openDrawer, selectAdding, selectSessionId, selectItemQtyInCart } from '../store/cartSlice'
 
 const ImagePlaceholder = ({ name }) => (
   <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-2">
@@ -35,9 +35,27 @@ export default function ProductCard({ product }) {
   const dispatch   = useDispatch()
   const sessionId  = useSelector(selectSessionId)
   const isAdding   = useSelector(selectAdding(product.id))
+  const inCartQty  = useSelector(selectItemQtyInCart(product.id))
   const [added,    setAdded]    = useState(false)
   const [imgError, setImgError] = useState(false)
 
+  const isInCart = inCartQty > 0
+
+  const handleAdd = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isAdding) return
+    // Если товар уже в корзине — просто открываем корзину
+    if (isInCart) {
+      dispatch(openDrawer())
+      return
+    }
+    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: 1 }))
+    if (addToCart.fulfilled.match(result)) {
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
+    }
+  }
   const numPrice = Number(product.price || 0)
   // Если цена целая — без копеек, если с копейками — ровно 2 знака
   const priceFormatted = numPrice.toLocaleString('ru-RU', {
@@ -56,17 +74,6 @@ export default function ProductCard({ product }) {
   }) + ' ₽'
 
   const minQty = product.min_order_qty || 1
-
-  const handleAdd = async (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isAdding) return
-    const result = await dispatch(addToCart({ sessionId, productId: product.id, quantity: 1 }))
-    if (addToCart.fulfilled.match(result)) {
-      setAdded(true)
-      setTimeout(() => setAdded(false), 2000)
-    }
-  }
 
   return (
     <article
@@ -198,18 +205,22 @@ export default function ProductCard({ product }) {
           <button
             onClick={handleAdd}
             disabled={isAdding}
-            aria-label={`Добавить «${product.name}» в корзину`}
+            aria-label={isInCart ? `Перейти в корзину — «${product.name}»` : `Добавить «${product.name}» в корзину`}
             className={`
               px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-heading font-semibold text-xs tracking-wider uppercase
               transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer flex-shrink-0 min-h-[38px] sm:min-h-[42px]
-              ${added
-                ? 'bg-emerald-600 text-white'
-                : 'bg-[#162330] hover:bg-[#1E2F40] text-white shadow-xs'
+              ${isInCart
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                : added
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-[#162330] hover:bg-[#1E2F40] text-white shadow-xs'
               }
             `}
           >
             {isAdding ? (
               <span>...</span>
+            ) : isInCart ? (
+              <span>✓ В корзине</span>
             ) : added ? (
               <span>✓ В корзине</span>
             ) : (

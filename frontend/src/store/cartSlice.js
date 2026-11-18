@@ -227,3 +227,6 @@ export const selectItemCount = (state) => state.cart.itemCount
 export const selectIsOpen    = (state) => state.cart.isOpen
 export const selectLoading   = (state) => state.cart.loading
 export const selectAdding    = (productId) => (state) => !!state.cart.adding[productId]
+/** Количество конкретного товара в корзине (0 если нет) */
+export const selectItemQtyInCart = (productId) => (state) =>
+  state.cart.items.find(i => i.product_id === productId)?.quantity ?? 0
