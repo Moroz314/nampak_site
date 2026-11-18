@@ -31,7 +31,7 @@ const MaxIcon = ({ className = "w-4 h-4" }) => (
   <svg
     viewBox="0 0 720 720"
     fill="currentColor"
-    className={`${className.includes('text-') ? '' : 'text-[#7C3AED]'} ${className} inline-block flex-shrink-0`}
+    className={`${className} inline-block flex-shrink-0`}
     aria-hidden="true"
   >
     <path d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/>
@@ -285,13 +285,13 @@ export default function ProductPage() {
 
             {/* Градация оптовых цен от объёма (как на референсе) */}
             {sortedTiers.length >= 2 && (
-              <div className="bg-[#FAF5EF] rounded-2xl border-2 border-[#E8D8C5] p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="bg-[#FAF5EF] rounded-2xl border-2 border-[#E8D8C5] p-3.5 sm:p-5 shadow-xs space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#926435]">
                     Оптовые цены от объёма заказа
                   </span>
-                  <span className="text-[11px] text-slate-500">
-                    Нажмите на строку для выбора
+                  <span className="text-[10px] sm:text-[11px] text-slate-500">
+                    Нажмите для выбора
                   </span>
                 </div>
 
@@ -303,7 +303,7 @@ export default function ProductPage() {
                         key={idx}
                         type="button"
                         onClick={() => setQuantity(tier.min_qty)}
-                        className={`w-full flex items-baseline justify-between px-3.5 py-2.5 rounded-xl transition-all text-xs sm:text-sm cursor-pointer ${
+                        className={`w-full flex items-baseline justify-between px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl transition-all text-xs sm:text-sm cursor-pointer ${
                           isActive
                             ? 'bg-[#162330] text-white font-bold shadow-xs ring-2 ring-[#C59B6D]/50'
                             : 'bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200/60'
@@ -313,13 +313,13 @@ export default function ProductPage() {
                           от {tier.min_qty.toLocaleString('ru-RU')} шт.
                         </span>
                         <span
-                          className={`flex-1 border-b border-dotted mx-2 sm:mx-3 mb-1 transition-colors ${
+                          className={`flex-1 border-b border-dotted mx-2 sm:mx-3 mb-1 min-w-[12px] transition-colors ${
                             isActive ? 'border-[#C59B6D]/70' : 'border-slate-300'
                           }`}
                         />
-                        <span className={`shrink-0 font-heading ${isActive ? 'text-white font-extrabold text-sm sm:text-base' : 'text-[#162330] font-bold'}`}>
+                        <span className={`shrink-0 font-heading whitespace-nowrap ${isActive ? 'text-white font-extrabold text-xs sm:text-base' : 'text-[#162330] font-bold'}`}>
                           {tier.price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
-                          <span className={`text-[10px] ml-1 font-normal ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>/ шт.</span>
+                          <span className={`text-[9px] sm:text-[10px] ml-1 font-normal ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>/ шт.</span>
                         </span>
                       </button>
                     )
@@ -445,18 +445,18 @@ export default function ProductPage() {
                   href="https://t.me/namupak"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold shadow-xs"
+                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-sky-500 hover:bg-white text-white hover:text-sky-600 border border-sky-500 rounded-xl text-xs font-semibold shadow-xs transition-all group"
                 >
-                  <TgIcon />
+                  <TgIcon className="w-4 h-4 text-white group-hover:text-sky-600 transition-colors" />
                   <span>Telegram</span>
                 </a>
                 <a
                   href="https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-xs"
+                  className="flex-1 min-w-[130px] inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#7C3AED] hover:bg-white text-white hover:text-[#7C3AED] border border-[#7C3AED] rounded-xl text-xs font-semibold shadow-xs transition-all group"
                 >
-                  <MaxIcon className="w-5 h-5" />
+                  <MaxIcon className="w-4 h-4 text-white group-hover:text-[#7C3AED] transition-colors" />
                   <span>Max</span>
                 </a>
                 <a

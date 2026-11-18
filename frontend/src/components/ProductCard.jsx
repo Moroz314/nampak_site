@@ -160,8 +160,8 @@ export default function ProductCard({ product }) {
             {sortedTiers.slice(0, 3).map((t, i) => (
               <div key={i} className="flex items-baseline justify-between text-[11px] text-slate-600 gap-1">
                 <span className="shrink-0 text-slate-500">от {t.min_qty.toLocaleString('ru-RU')} шт.</span>
-                <span className="flex-1 border-b border-dotted border-slate-300 mx-1 mb-0.5" />
-                <span className="shrink-0 font-bold text-[#162330]">
+                <span className="flex-1 border-b border-dotted border-slate-300 mx-1 mb-0.5 min-w-[10px]" />
+                <span className="shrink-0 font-bold text-[#162330] whitespace-nowrap">
                   {t.price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
                 </span>
               </div>

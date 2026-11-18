@@ -29,7 +29,7 @@ const MaxIcon = ({ className = "w-3.5 h-3.5" }) => (
   <svg
     viewBox="0 0 720 720"
     fill="currentColor"
-    className={`${className.includes('text-') ? '' : 'text-[#7C3AED]'} ${className} inline-block flex-shrink-0`}
+    className={`${className} inline-block flex-shrink-0`}
     aria-hidden="true"
   >
     <path d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/>
@@ -323,18 +323,18 @@ export default function Catalog({ showHero = false }) {
                     href="https://t.me/namupak"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1 shadow-xs"
+                    className="flex-1 bg-sky-500 hover:bg-white text-white hover:text-sky-600 border border-sky-500 rounded-lg py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1 shadow-xs transition-all group"
                   >
-                    <TgIcon />
+                    <TgIcon className="w-3.5 h-3.5 text-white group-hover:text-sky-600 transition-colors" />
                     <span>Telegram</span>
                   </a>
                   <a
                     href="https://max.ru/join/CNMJPGqDX3nDW430jTIt4Ft1HDnfe-j1uSjygxIxgRg"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1 shadow-xs"
+                    className="flex-1 bg-[#7C3AED] hover:bg-white text-white hover:text-[#7C3AED] border border-[#7C3AED] rounded-lg py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1 shadow-xs transition-all group"
                   >
-                    <MaxIcon />
+                    <MaxIcon className="w-3.5 h-3.5 text-white group-hover:text-[#7C3AED] transition-colors" />
                     <span>Max</span>
                   </a>
                 </div>
