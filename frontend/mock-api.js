@@ -28,6 +28,11 @@ export const PRODUCTS = [
     material_specs: "Т-23 ТИП Д",
     in_stock: true,
     is_custom_design: false,
+    price_tiers: [
+      { min_qty: 1, price: 496.65 },
+      { min_qty: 20, price: 462.00 },
+      { min_qty: 70, price: 430.50 }
+    ],
     image_url: null,
     images: [],
     description: "<p>Самосборный короб типа «самолёт» из бурого трёхслойного гофрокартона марки <strong>Т-23 ТИП Д</strong>. Оптимален для фасовки товаров на маркетплейсах (Wildberries, Ozon, Яндекс Маркет), почтовых и курьерских отправлений. Быстро и легко собирается по линиям биговки без скотча.</p>",

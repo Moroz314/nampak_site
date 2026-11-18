@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -77,18 +77,17 @@ function CartItem({ item }) {
     maximumFractionDigits: 2,
   }) + ' ₽'
 
-  // Определение следующего более выгодного оптового уровня цены
-  const nextTier = useMemo(() => {
-    if (!item.price_tiers || !Array.isArray(item.price_tiers) || item.price_tiers.length === 0) return null
-    const sorted = [...item.price_tiers]
-      .filter(t => t && t.min_qty != null && t.price != null && !isNaN(Number(t.min_qty)) && !isNaN(Number(t.price)))
-      .map(t => ({ min_qty: Number(t.min_qty), price: Number(t.price) }))
-      .sort((a, b) => a.min_qty - b.min_qty)
+  const sortedTiers = (item.price_tiers || [])
+    .filter(t => t && t.min_qty && t.price)
+    .map(t => ({ min_qty: Number(t.min_qty), price: Number(t.price) }))
+    .sort((a, b) => a.min_qty - b.min_qty)
 
-    return sorted.find(t => t.min_qty > item.quantity && t.price < Number(item.price))
-  }, [item.price_tiers, item.quantity, item.price])
-
-  const neededForNextTier = nextTier ? nextTier.min_qty - item.quantity : 0
+  const nextTier = sortedTiers.find(t => t.min_qty > item.quantity)
+  const diffToNextTier = nextTier ? nextTier.min_qty - item.quantity : 0
+  const nextTierPriceFormatted = nextTier ? Number(nextTier.price).toLocaleString('ru-RU', {
+    minimumFractionDigits: Number(nextTier.price) % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }) + ' ₽' : ''
 
   return (
     <li className="py-4 border-b border-slate-100 last:border-0">
@@ -134,11 +133,6 @@ function CartItem({ item }) {
           {/* Цена за штуку */}
           <div className="text-xs text-slate-500 mt-1">
             {priceFormatted} <span className="text-slate-400">/ шт.</span>
-            {item.price_tiers && item.price_tiers.length > 0 && (
-              <span className="ml-1.5 text-[10px] text-[#926435] font-semibold">
-                (оптовая цена)
-              </span>
-            )}
           </div>
         </div>
 
@@ -209,19 +203,19 @@ function CartItem({ item }) {
         </div>
       </div>
 
-      {/* Подсказка о следующем более выгодном оптовом уровне */}
+      {/* Подсказка для перехода на следующий оптовый уровень */}
       {nextTier && (
-        <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] bg-[#FAF5EF] text-[#926435] px-3 py-2 rounded-xl border border-[#E8D8C5]">
-          <span className="leading-tight">
-            Добавьте ещё <strong>{neededForNextTier.toLocaleString('ru-RU')} шт.</strong>, и цена снизится до <strong>{nextTier.price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽/шт.</strong>
+        <div
+          onClick={() => commitQty(nextTier.min_qty)}
+          className="mt-2 text-[11px] bg-emerald-50 hover:bg-emerald-100/90 text-emerald-800 border border-emerald-200/90 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-1.5 cursor-pointer transition-colors"
+          title={`Установить объём ${nextTier.min_qty.toLocaleString('ru-RU')} шт.`}
+        >
+          <span>
+            💡 Добавьте ещё <strong>{diffToNextTier.toLocaleString('ru-RU')} шт.</strong>, чтобы цена снизилась до <strong>{nextTierPriceFormatted}/шт.</strong>
           </span>
-          <button
-            type="button"
-            onClick={() => commitQty(nextTier.min_qty)}
-            className="px-2.5 py-1 bg-[#162330] hover:bg-[#1E2F40] text-[#E8D8C5] hover:text-white font-bold rounded-lg text-[10px] shrink-0 transition-colors cursor-pointer"
-          >
-            Взять {nextTier.min_qty.toLocaleString('ru-RU')} шт.
-          </button>
+          <span className="text-[10px] font-bold text-emerald-700 underline uppercase tracking-wider shrink-0">
+            Применить
+          </span>
         </div>
       )}
     </li>

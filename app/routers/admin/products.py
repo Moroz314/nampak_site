@@ -20,6 +20,23 @@ from app.schemas import (
 router = APIRouter()
 
 
+def _normalize_price_tiers(tiers: list | None) -> list[dict]:
+    if not tiers:
+        return []
+    clean = []
+    for t in tiers:
+        if isinstance(t, dict):
+            try:
+                mq = int(t.get("min_qty", 1))
+                pr = round(float(t.get("price", 0)), 2)
+                if mq >= 1 and pr >= 0:
+                    clean.append({"min_qty": mq, "price": pr})
+            except (ValueError, TypeError):
+                continue
+    clean.sort(key=lambda x: x["min_qty"])
+    return clean
+
+
 @router.get("/", response_model=list[ProductRead], summary="Все товары")
 async def list_products(
     category_id: int | None = Query(default=None),
@@ -65,22 +82,6 @@ async def reorder_products(
     return {"status": "ok", "updated": updated_count}
 
 
-def _normalize_price_tiers(tiers: list | None) -> list[dict]:
-    if not tiers:
-        return []
-    cleaned: list[dict] = []
-    for t in tiers:
-        if isinstance(t, dict):
-            min_q = int(t.get("min_qty", 1))
-            raw_p = t.get("price", 0)
-            p = float(raw_p) if raw_p is not None else 0.0
-            cleaned.append({"min_qty": max(1, min_q), "price": round(p, 2)})
-        elif hasattr(t, "min_qty") and hasattr(t, "price"):
-            cleaned.append({"min_qty": max(1, int(t.min_qty)), "price": round(float(t.price), 2)})
-    cleaned.sort(key=lambda x: x["min_qty"])
-    return cleaned
-
-
 @router.post(
     "/",
     response_model=ProductRead,
@@ -97,11 +98,9 @@ async def create_product(
         raise HTTPException(status_code=409, detail=f"Slug '{body.slug}' уже занят")
 
     data = body.model_dump()
-    image_urls = data.pop("images", None) or ([data["image_url"]] if data.get("image_url") else [])
     if "price_tiers" in data:
         data["price_tiers"] = _normalize_price_tiers(data["price_tiers"])
-        if data["price_tiers"] and (not data.get("price") or data["price"] == 0):
-            data["price"] = Decimal(str(data["price_tiers"][0]["price"]))
+    image_urls = data.pop("images", None) or ([data["image_url"]] if data.get("image_url") else [])
 
     # Новый товар получает sort_order = max(текущих в категории) + 1, чтобы попадал в конец списка
     if not data.get("sort_order"):
@@ -150,8 +149,6 @@ async def update_product(
     data = body.model_dump(exclude_unset=True)
     if "price_tiers" in data:
         data["price_tiers"] = _normalize_price_tiers(data["price_tiers"])
-        if data["price_tiers"] and (not data.get("price") or data.get("price") == 0) and not product.price:
-            data["price"] = Decimal(str(data["price_tiers"][0]["price"]))
     image_urls = data.pop("images", None)
     if "slug" in data:
         clash = await db.execute(

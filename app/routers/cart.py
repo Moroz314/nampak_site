@@ -16,7 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_optional_current_user
-from app.models import Product, User, get_unit_price_for_qty
+from app.models import Product, User
+from app.pricing import get_unit_price_for_qty
 from app.schemas import CartItemAdd, CartItemRead, CartItemRemove, CartRead
 
 router = APIRouter()

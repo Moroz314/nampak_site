@@ -177,14 +177,14 @@ function SortableProductCard({
                 от {product.min_order_qty} шт.
               </span>
             )}
+            {product.price_tiers?.length > 0 && (
+              <span className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                Опт: {product.price_tiers.length} ур.
+              </span>
+            )}
             {product.is_custom_design && (
               <span className="text-[11px] bg-[#FAF5EF] text-[#B08455] border border-[#E8D8C5] px-2 py-0.5 rounded font-bold">
                 Логотип / под заказ
-              </span>
-            )}
-            {product.price_tiers && product.price_tiers.length > 0 && (
-              <span className="text-[11px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-bold" title="Градация оптовых цен">
-                {product.price_tiers.length} ур. цен
               </span>
             )}
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -272,8 +272,10 @@ function ProductModal({ product, categories, onClose, onSaved }) {
     material_specs:   product.material_specs ?? '',
     min_order_qty:    product.min_order_qty ?? 1,
     is_custom_design: Boolean(product.is_custom_design),
-    price_tiers:      Array.isArray(product.price_tiers) ? product.price_tiers.map(t => ({ min_qty: t.min_qty, price: t.price })) : [],
-  } : { ...EMPTY_PRODUCT })
+    price_tiers:      Array.isArray(product.price_tiers)
+      ? product.price_tiers.map(t => ({ min_qty: t.min_qty, price: String(t.price) }))
+      : [],
+  } : { ...EMPTY_PRODUCT, price_tiers: [] })
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
@@ -295,8 +297,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         : ''
       const isDescEmpty = !cleanDesc || cleanDesc === '<p><br></p>' || cleanDesc === '<p></p>'
 
-      // Очистка и сортировка ценовых порогов
-      const cleanedTiers = (form.price_tiers || [])
+      const cleanTiers = (form.price_tiers || [])
         .filter(t => t.min_qty !== '' && t.price !== '' && !isNaN(Number(t.min_qty)) && !isNaN(Number(t.price)))
         .map(t => ({
           min_qty: Math.max(1, parseInt(t.min_qty, 10)),
@@ -304,13 +305,9 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         }))
         .sort((a, b) => a.min_qty - b.min_qty)
 
-      const basePrice = form.price !== '' && !isNaN(Number(form.price))
-        ? parseFloat(form.price)
-        : (cleanedTiers[0]?.price ?? 0)
-
       const payload = {
         ...form,
-        price:            basePrice,
+        price:            parseFloat(form.price),
         category_id:      form.category_id ? parseInt(form.category_id) : null,
         image_url:        form.image_url   || null,
         images:           form.images,
@@ -319,7 +316,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         material_specs:   form.material_specs ? form.material_specs.trim() : null,
         min_order_qty:    Math.max(1, parseInt(form.min_order_qty) || 1),
         is_custom_design: Boolean(form.is_custom_design),
-        price_tiers:      cleanedTiers,
+        price_tiers:      cleanTiers,
       }
       if (product) {
         await adminApi.patch(`/admin/products/${product.id}`, payload)
@@ -402,102 +399,127 @@ function ProductModal({ product, categories, onClose, onSaved }) {
           </div>
 
           <div className="admin-field">
-            <label className="admin-label">Базовая цена за 1 шт. (₽) *</label>
-            <input className="admin-input text-xl font-bold" required={!form.price_tiers || form.price_tiers.length === 0} type="number"
+            <label className="admin-label">Цена за 1 шт. (₽) *</label>
+            <input className="admin-input text-xl font-bold" required type="number"
               min="0" step="0.01"
               value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
               placeholder="10.50" />
-            <p className="text-xs text-gray-400 mt-1">С точностью до копеек, например: 10.50 или 1.09</p>
+            <p className="text-xs text-gray-400 mt-1">Базовая цена (для 1 шт. или первой партии), например: 10.50</p>
           </div>
         </div>
 
-        {/* Градация оптовых цен от тиража */}
-        <div className="p-4 bg-[#FAF5EF]/60 rounded-2xl border border-[#E8D8C5] space-y-3">
-          <div className="flex items-center justify-between gap-3">
+        {/* Градация цен от тиража (оптовые уровни) */}
+        <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span className="font-bold text-sm text-[#162330] block">
-                Градация цен от тиража (оптовые уровни)
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-[#162330]">
+                  Градация цен от тиража (оптовые уровни)
+                </span>
+                <span className="text-[11px] font-semibold bg-[#FAF5EF] text-[#926435] border border-[#E8D8C5] px-2 py-0.5 rounded-full">
+                  {form.price_tiers?.length || 0} уровней
+                </span>
+              </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Например: от 1 шт. — 496,65 ₽, от 20 шт. — 462,00 ₽, от 70 шт. — 430,50 ₽
+                Автоматический пересчёт стоимости за 1 шт. при покупке более крупной партии
               </p>
             </div>
             <button
               type="button"
-              onClick={() => setForm(f => ({
-                ...f,
-                price_tiers: [...(f.price_tiers || []), { min_qty: '', price: '' }]
-              }))}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#926435] bg-white hover:bg-[#FAF5EF] border border-[#E8D8C5] rounded-xl transition-colors cursor-pointer shadow-2xs shrink-0"
+              onClick={() => {
+                const current = form.price_tiers || []
+                let nextQty = 1
+                if (current.length > 0) {
+                  const lastQ = parseInt(current[current.length - 1].min_qty, 10) || 1
+                  nextQty = lastQ >= 1000 ? lastQ + 1000 : (lastQ >= 100 ? lastQ + 100 : (lastQ >= 20 ? lastQ + 50 : lastQ + 10))
+                }
+                const defaultP = current.length > 0 ? current[current.length - 1].price : (form.price || '')
+                setForm(f => ({
+                  ...f,
+                  price_tiers: [...(f.price_tiers || []), { min_qty: nextQty, price: defaultP }]
+                }))
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#C59B6D] text-[#926435] hover:bg-[#FAF5EF] rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer self-start sm:self-auto"
             >
               <Plus size={14} />
-              <span>+ Уровень цены</span>
+              <span>+ Добавить уровень цены</span>
             </button>
           </div>
 
-          {form.price_tiers && form.price_tiers.length > 0 ? (
+          {(!form.price_tiers || form.price_tiers.length === 0) ? (
+            <div className="p-3 bg-white rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400">
+              Ценовые уровни не добавлены — действует единая базовая цена ({form.price ? `${form.price} ₽` : 'не указана'}).
+              Нажмите кнопку выше, чтобы добавить пороги (например: «от 1 шт. — 496,65 ₽», «от 20 шт. — 462 ₽», «от 70 шт. — 430,50 ₽»).
+            </div>
+          ) : (
             <div className="space-y-2 pt-1">
+              <div className="grid grid-cols-12 gap-2 text-[11px] font-semibold text-slate-500 uppercase px-1">
+                <div className="col-span-5 sm:col-span-5">От объёма (шт.)</div>
+                <div className="col-span-5 sm:col-span-6">Цена за 1 шт. (₽)</div>
+                <div className="col-span-2 sm:col-span-1 text-right">Удалить</div>
+              </div>
+
               {form.price_tiers.map((tier, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                  <span className="text-xs font-bold text-[#926435] pl-1 w-6">#{idx + 1}</span>
-                  <div className="flex-1 flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500 font-medium">от</span>
+                <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border border-slate-200">
+                  <div className="col-span-5 sm:col-span-5">
                     <input
                       type="number"
                       min="1"
-                      placeholder="кол-во"
+                      step="1"
                       value={tier.min_qty}
                       onChange={(e) => {
                         const val = e.target.value
                         setForm(f => {
-                          const copy = [...f.price_tiers]
-                          copy[idx] = { ...copy[idx], min_qty: val }
-                          return { ...f, price_tiers: copy }
+                          const updated = [...(f.price_tiers || [])]
+                          updated[idx] = { ...updated[idx], min_qty: val }
+                          return { ...f, price_tiers: updated }
                         })
                       }}
-                      className="w-full text-xs font-bold px-2 py-1.5 border border-slate-200 rounded-lg focus:border-[#C59B6D] outline-none"
+                      placeholder="1"
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-semibold text-[#162330] focus:border-[#C59B6D] outline-none"
                     />
-                    <span className="text-xs text-slate-500 font-medium">шт.</span>
                   </div>
-                  <div className="flex-1 flex items-center gap-1.5">
+
+                  <div className="col-span-5 sm:col-span-6">
                     <input
                       type="number"
                       min="0"
                       step="0.01"
-                      placeholder="Цена"
                       value={tier.price}
                       onChange={(e) => {
                         const val = e.target.value
                         setForm(f => {
-                          const copy = [...f.price_tiers]
-                          copy[idx] = { ...copy[idx], price: val }
-                          return { ...f, price_tiers: copy }
+                          const updated = [...(f.price_tiers || [])]
+                          updated[idx] = { ...updated[idx], price: val }
+                          return { ...f, price_tiers: updated }
                         })
                       }}
-                      className="w-full text-xs font-bold px-2 py-1.5 border border-slate-200 rounded-lg focus:border-[#C59B6D] outline-none"
+                      placeholder="10.50"
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-semibold text-[#162330] focus:border-[#C59B6D] outline-none"
                     />
-                    <span className="text-xs text-slate-500 font-medium">₽/шт.</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForm(f => ({
-                        ...f,
-                        price_tiers: f.price_tiers.filter((_, i) => i !== idx)
-                      }))
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                    title="Удалить ценовой уровень"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+
+                  <div className="col-span-2 sm:col-span-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          price_tiers: (f.price_tiers || []).filter((_, i) => i !== idx)
+                        }))
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title="Удалить порог цены"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
+              <p className="text-[11px] text-slate-400 pt-1">
+                💡 При сохранении пороги автоматически сортируются по возрастанию количества (от меньшего тиража к большему).
+              </p>
             </div>
-          ) : (
-            <p className="text-xs text-slate-400 italic">
-              Оптовые уровни не добавлены. Будет действовать базовая цена за 1 шт.
-            </p>
           )}
         </div>
 

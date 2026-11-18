@@ -86,41 +86,7 @@ class Product(Base):
         return f"<Product id={self.id} slug={self.slug!r} price={self.price}>"
 
 
-def get_unit_price_for_qty(product: Product, quantity: int) -> Decimal:
-    """
-    Возвращает актуальную цену за 1 шт. с учётом ценовых порогов (price_tiers).
-    Если tiers не заданы, возвращает базовую product.price.
-    """
-    tiers = getattr(product, "price_tiers", None)
-    if not tiers or not isinstance(tiers, list) or len(tiers) == 0:
-        return Decimal(str(product.price))
-
-    valid_tiers: list[tuple[int, Decimal]] = []
-    for tier in tiers:
-        if isinstance(tier, dict) and "min_qty" in tier and "price" in tier:
-            try:
-                min_q = int(tier["min_qty"])
-                p = Decimal(str(tier["price"]))
-                valid_tiers.append((min_q, p))
-            except (ValueError, TypeError):
-                continue
-
-    if not valid_tiers:
-        return Decimal(str(product.price))
-
-    valid_tiers.sort(key=lambda t: t[0])
-
-    best_price: Decimal | None = None
-    for min_q, p in valid_tiers:
-        if quantity >= min_q:
-            best_price = p
-        else:
-            break
-
-    if best_price is None:
-        best_price = valid_tiers[0][1]
-
-    return best_price
+from app.pricing import get_unit_price_for_qty  # re-export for backward compatibility
 
 
 # ── Product images ───────────────────────────────────────────────────────────
