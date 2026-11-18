@@ -23,16 +23,19 @@ const ImagePlaceholder = ({ name }) => (
 
 const TgIcon = ({ className = "w-4 h-4" }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
   </svg>
 )
 
 const MaxIcon = ({ className = "w-4 h-4" }) => (
-  <img
-    src="https://maxicons.ru/icons/Max_logo.svg"
-    alt="Иконка MAX"
-    className={`${className} object-contain inline-block flex-shrink-0`}
-  />
+  <svg
+    viewBox="0 0 720 720"
+    fill="currentColor"
+    className={`${className.includes('text-') ? '' : 'text-[#7C3AED]'} ${className} inline-block flex-shrink-0`}
+    aria-hidden="true"
+  >
+    <path d="M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z"/>
+  </svg>
 )
 
 function cleanHtmlContent(html) {
@@ -146,7 +149,7 @@ export default function ProductPage() {
   return (
     <div className="bg-[#F8FAFC] py-8 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Хлебные крошки */}
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link to="/" className="hover:text-[#C59B6D]">Главная</Link>
@@ -164,7 +167,7 @@ export default function ProductPage() {
 
         {/* Двухколоночный блок товара */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          
+
           {/* ── ЛЕВАЯ КОЛОНКА: ФОТОГРАФИИ ────────────────────────── */}
           <div className="lg:col-span-6 space-y-4">
             <div className="relative aspect-[4/3] sm:aspect-square overflow-hidden bg-white border border-slate-200 rounded-3xl shadow-xs">
@@ -206,11 +209,10 @@ export default function ProductPage() {
                       setImageError(false)
                       setActiveImageIndex(index)
                     }}
-                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                      index === activeImageIndex
+                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${index === activeImageIndex
                         ? 'border-[#C59B6D] ring-2 ring-[#C59B6D]/20'
                         : 'border-slate-200 opacity-70 hover:opacity-100 bg-white'
-                    }`}
+                      }`}
                   >
                     <img src={image.url} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -221,7 +223,7 @@ export default function ProductPage() {
 
           {/* ── ПРАВАЯ КОЛОНКА: ПАРАМЕТРЫ И ЗАКАЗ ТИРАЖА ──────────── */}
           <div className="lg:col-span-6 space-y-6">
-            
+
             <div>
               {product.category && (
                 <span className="text-xs font-bold uppercase tracking-wider text-[#926435] bg-[#FAF5EF] px-2.5 py-1 rounded-md border border-[#E8D8C5] inline-block mb-3">
@@ -329,11 +331,10 @@ export default function ProductPage() {
                 type="button"
                 onClick={handleAdd}
                 disabled={isAdding}
-                className={`w-full py-4 px-6 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 min-h-[48px] ${
-                  added
+                className={`w-full py-4 px-6 rounded-xl font-heading font-bold text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 min-h-[48px] ${added
                     ? 'bg-emerald-600 text-white'
                     : 'bg-gradient-to-r from-[#C59B6D] to-[#B08455] hover:from-[#B08455] hover:to-[#9A7244] text-white'
-                }`}
+                  }`}
               >
                 {isAdding ? (
                   <span>Добавление...</span>
@@ -352,7 +353,7 @@ export default function ProductPage() {
                 <span>Нужен нестандартный размер или нанесение логотипа?</span>
               </div>
               <p className="text-xs text-slate-700 leading-relaxed">
-                Изготовим упаковку с вашей фирменной символикой от 2 000 шт. или по индивидуальной раскладке до 5 дней. Напишите менеджеру для моментального расчёта:
+                Изготовим упаковку с вашей фирменной символикой  по запросу и предоставлению полной информации, в т.ч. Макета. Напишите менеджеру для расчёта:
               </p>
               <div className="flex flex-col sm:flex-row flex-wrap gap-2 pt-1">
                 <a
