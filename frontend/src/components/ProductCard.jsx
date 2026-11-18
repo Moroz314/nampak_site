@@ -63,15 +63,26 @@ export default function ProductCard({ product }) {
     maximumFractionDigits: 2,
   }) + ' ₽'
 
-  const hasTiers = Array.isArray(product.price_tiers) && product.price_tiers.length >= 2
-  const sortedTiers = hasTiers
+  // Оптовые тиры — сортируем по возрастанию min_qty
+  const sortedTiers = Array.isArray(product.price_tiers) && product.price_tiers.length > 0
     ? [...product.price_tiers].sort((a, b) => Number(a.min_qty) - Number(b.min_qty))
     : []
-  const lowestPrice = hasTiers ? Math.min(...sortedTiers.map(t => Number(t.price))) : numPrice
+  // Есть ли тир с min_qty === 1 (или 0) — чтобы не дублировать базовую цену
+  const firstTierIsOne = sortedTiers.length > 0 && Number(sortedTiers[0].min_qty) <= 1
+  // Строки для отображения: всегда базовая цена (1 шт.) + оптовые тиры
+  // Если первый тир уже на 1 шт. — он заменяет базовую строку
+  const priceRows = firstTierIsOne
+    ? sortedTiers
+    : [{ min_qty: 1, price: numPrice }, ...sortedTiers]
+  // Самая низкая цена (для подписи в нижней части карточки)
+  const lowestPrice = priceRows.length > 0
+    ? Math.min(...priceRows.map(t => Number(t.price)))
+    : numPrice
   const lowestPriceFormatted = lowestPrice.toLocaleString('ru-RU', {
     minimumFractionDigits: lowestPrice % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   }) + ' ₽'
+  const hasTiers = sortedTiers.length > 0
 
   const minQty = product.min_order_qty || 1
 
@@ -158,38 +169,37 @@ export default function ProductCard({ product }) {
           </p>
         )}
 
-        {/* ── Табличка градации оптовых цен ─────────────────── */}
-        {hasTiers && (
-          <div className="bg-[#FAF5EF]/70 rounded-xl border border-[#E8D8C5] p-2.5 my-1 text-xs space-y-1">
-            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#926435] pb-1 border-b border-[#E8D8C5]/60">
-              <span>Тираж</span>
-              <span>Цена за 1 шт.</span>
-            </div>
-            {sortedTiers.slice(0, 3).map((tier, idx) => {
-              const tierPriceFormatted = Number(tier.price).toLocaleString('ru-RU', {
-                minimumFractionDigits: Number(tier.price) % 1 === 0 ? 0 : 2,
-                maximumFractionDigits: 2,
-              }) + ' ₽'
-
-              return (
-                <div key={idx} className="flex items-center justify-between text-[11px] text-slate-700">
-                  <span className="font-medium text-slate-600">
-                    от {Number(tier.min_qty).toLocaleString('ru-RU')} шт.
-                  </span>
-                  <span className="flex-1 mx-2 border-b border-dotted border-slate-300 mb-0.5" />
-                  <span className="font-bold text-[#162330]">
-                    {tierPriceFormatted}
-                  </span>
-                </div>
-              )
-            })}
-            {sortedTiers.length > 3 && (
-              <div className="text-[10px] text-[#926435] text-right font-medium pt-0.5">
-                + ещё {sortedTiers.length - 3} ур. скидок
-              </div>
-            )}
+        {/* ── Табличка цен от тиража (всегда, если есть хоть одна строка) ── */}
+        <div className="bg-[#FAF5EF]/70 rounded-xl border border-[#E8D8C5] p-2.5 my-1 text-xs space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#926435] pb-1 border-b border-[#E8D8C5]/60">
+            <span>Тираж</span>
+            <span>Цена за 1 шт.</span>
           </div>
-        )}
+          {priceRows.slice(0, 4).map((row, idx) => {
+            const p = Number(row.price)
+            const rowPriceFormatted = p.toLocaleString('ru-RU', {
+              minimumFractionDigits: p % 1 === 0 ? 0 : 2,
+              maximumFractionDigits: 2,
+            }) + ' ₽'
+            const isBase = Number(row.min_qty) <= 1 && !firstTierIsOne
+            return (
+              <div key={idx} className="flex items-center justify-between text-[11px] text-slate-700">
+                <span className={`font-medium ${isBase ? 'text-slate-500' : 'text-slate-600'}`}>
+                  от {Number(row.min_qty).toLocaleString('ru-RU')} шт.
+                </span>
+                <span className="flex-1 mx-2 border-b border-dotted border-slate-300 mb-0.5" />
+                <span className={`font-bold ${idx === 0 ? 'text-slate-600' : 'text-[#162330]'}`}>
+                  {rowPriceFormatted}
+                </span>
+              </div>
+            )
+          })}
+          {priceRows.length > 4 && (
+            <div className="text-[10px] text-[#926435] text-right font-medium pt-0.5">
+              + ещё {priceRows.length - 4} ур. скидок
+            </div>
+          )}
+        </div>
 
         {/* ── Нижняя строка: Цена + Кнопка ───────────────────── */}
         <div className="flex items-center justify-between gap-2 sm:gap-3 pt-3 mt-auto border-t border-slate-100">
