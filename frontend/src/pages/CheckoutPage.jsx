@@ -742,6 +742,11 @@ export default function CheckoutPage() {
                             {it.dimensions_mm && <span className="mr-1">{it.dimensions_mm}</span>}
                             {it.material_specs && <span className="mr-1 font-semibold text-[#926435]">[{it.material_specs}]</span>}
                             <span>× {it.quantity.toLocaleString('ru-RU')} шт.</span>
+                            {it.price && (
+                              <span className="ml-1 text-[#926435] font-medium">
+                                ({Number(it.price).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽/шт.)
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="font-heading font-bold text-[#162330] whitespace-nowrap">

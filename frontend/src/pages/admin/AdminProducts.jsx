@@ -182,6 +182,11 @@ function SortableProductCard({
                 Логотип / под заказ
               </span>
             )}
+            {product.price_tiers && product.price_tiers.length > 0 && (
+              <span className="text-[11px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-bold" title="Градация оптовых цен">
+                {product.price_tiers.length} ур. цен
+              </span>
+            )}
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
               product.in_stock ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
             }`}>
@@ -250,6 +255,7 @@ const EMPTY_PRODUCT = {
   name: '', slug: '', price: '', description: '',
   image_url: '', images: [], in_stock: true, category_id: '',
   dimensions_mm: '', material_specs: '', min_order_qty: 1, is_custom_design: false,
+  price_tiers: [],
 }
 
 function ProductModal({ product, categories, onClose, onSaved }) {
@@ -266,6 +272,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
     material_specs:   product.material_specs ?? '',
     min_order_qty:    product.min_order_qty ?? 1,
     is_custom_design: Boolean(product.is_custom_design),
+    price_tiers:      Array.isArray(product.price_tiers) ? product.price_tiers.map(t => ({ min_qty: t.min_qty, price: t.price })) : [],
   } : { ...EMPTY_PRODUCT })
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
@@ -287,9 +294,23 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         ? form.description.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').trim()
         : ''
       const isDescEmpty = !cleanDesc || cleanDesc === '<p><br></p>' || cleanDesc === '<p></p>'
+
+      // Очистка и сортировка ценовых порогов
+      const cleanedTiers = (form.price_tiers || [])
+        .filter(t => t.min_qty !== '' && t.price !== '' && !isNaN(Number(t.min_qty)) && !isNaN(Number(t.price)))
+        .map(t => ({
+          min_qty: Math.max(1, parseInt(t.min_qty, 10)),
+          price: Math.max(0, parseFloat(t.price)),
+        }))
+        .sort((a, b) => a.min_qty - b.min_qty)
+
+      const basePrice = form.price !== '' && !isNaN(Number(form.price))
+        ? parseFloat(form.price)
+        : (cleanedTiers[0]?.price ?? 0)
+
       const payload = {
         ...form,
-        price:            parseFloat(form.price),
+        price:            basePrice,
         category_id:      form.category_id ? parseInt(form.category_id) : null,
         image_url:        form.image_url   || null,
         images:           form.images,
@@ -298,6 +319,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         material_specs:   form.material_specs ? form.material_specs.trim() : null,
         min_order_qty:    Math.max(1, parseInt(form.min_order_qty) || 1),
         is_custom_design: Boolean(form.is_custom_design),
+        price_tiers:      cleanedTiers,
       }
       if (product) {
         await adminApi.patch(`/admin/products/${product.id}`, payload)
@@ -380,13 +402,103 @@ function ProductModal({ product, categories, onClose, onSaved }) {
           </div>
 
           <div className="admin-field">
-            <label className="admin-label">Цена за 1 шт. (₽) *</label>
-            <input className="admin-input text-xl font-bold" required type="number"
+            <label className="admin-label">Базовая цена за 1 шт. (₽) *</label>
+            <input className="admin-input text-xl font-bold" required={!form.price_tiers || form.price_tiers.length === 0} type="number"
               min="0" step="0.01"
               value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
               placeholder="10.50" />
             <p className="text-xs text-gray-400 mt-1">С точностью до копеек, например: 10.50 или 1.09</p>
           </div>
+        </div>
+
+        {/* Градация оптовых цен от тиража */}
+        <div className="p-4 bg-[#FAF5EF]/60 rounded-2xl border border-[#E8D8C5] space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <span className="font-bold text-sm text-[#162330] block">
+                Градация цен от тиража (оптовые уровни)
+              </span>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Например: от 1 шт. — 496,65 ₽, от 20 шт. — 462,00 ₽, от 70 шт. — 430,50 ₽
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm(f => ({
+                ...f,
+                price_tiers: [...(f.price_tiers || []), { min_qty: '', price: '' }]
+              }))}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#926435] bg-white hover:bg-[#FAF5EF] border border-[#E8D8C5] rounded-xl transition-colors cursor-pointer shadow-2xs shrink-0"
+            >
+              <Plus size={14} />
+              <span>+ Уровень цены</span>
+            </button>
+          </div>
+
+          {form.price_tiers && form.price_tiers.length > 0 ? (
+            <div className="space-y-2 pt-1">
+              {form.price_tiers.map((tier, idx) => (
+                <div key={idx} className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                  <span className="text-xs font-bold text-[#926435] pl-1 w-6">#{idx + 1}</span>
+                  <div className="flex-1 flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 font-medium">от</span>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="кол-во"
+                      value={tier.min_qty}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setForm(f => {
+                          const copy = [...f.price_tiers]
+                          copy[idx] = { ...copy[idx], min_qty: val }
+                          return { ...f, price_tiers: copy }
+                        })
+                      }}
+                      className="w-full text-xs font-bold px-2 py-1.5 border border-slate-200 rounded-lg focus:border-[#C59B6D] outline-none"
+                    />
+                    <span className="text-xs text-slate-500 font-medium">шт.</span>
+                  </div>
+                  <div className="flex-1 flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Цена"
+                      value={tier.price}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setForm(f => {
+                          const copy = [...f.price_tiers]
+                          copy[idx] = { ...copy[idx], price: val }
+                          return { ...f, price_tiers: copy }
+                        })
+                      }}
+                      className="w-full text-xs font-bold px-2 py-1.5 border border-slate-200 rounded-lg focus:border-[#C59B6D] outline-none"
+                    />
+                    <span className="text-xs text-slate-500 font-medium">₽/шт.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(f => ({
+                        ...f,
+                        price_tiers: f.price_tiers.filter((_, i) => i !== idx)
+                      }))
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                    title="Удалить ценовой уровень"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 italic">
+              Оптовые уровни не добавлены. Будет действовать базовая цена за 1 шт.
+            </p>
+          )}
         </div>
 
         {/* Возможность нанесения логотипа / под заказ */}

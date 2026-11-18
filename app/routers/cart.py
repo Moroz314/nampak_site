@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_optional_current_user
-from app.models import Product, User
+from app.models import Product, User, get_unit_price_for_qty
 from app.schemas import CartItemAdd, CartItemRead, CartItemRemove, CartRead
 
 router = APIRouter()
@@ -108,18 +108,20 @@ async def _build_cart(session_id: str, redis, db: AsyncSession, cart_key: str | 
         if product is None:
             await redis.hdel(key, pid_str)
             continue
-        subtotal = product.price * qty
+        unit_price = get_unit_price_for_qty(product, qty)
+        subtotal = unit_price * qty
         total += subtotal
         items.append(CartItemRead(
             product_id=pid,
             quantity=qty,
             name=product.name,
-            price=product.price,
+            price=unit_price,
             image_url=product.image_url,
             subtotal=subtotal,
             min_order_qty=getattr(product, "min_order_qty", 1) or 1,
             dimensions_mm=getattr(product, "dimensions_mm", None),
             material_specs=getattr(product, "material_specs", None),
+            price_tiers=getattr(product, "price_tiers", []) or [],
         ))
 
     return CartRead(session_id=session_id, items=items, total=total)

@@ -170,6 +170,9 @@ async def lifespan(app: FastAPI):
                 await conn.execute(
                     sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_custom_design BOOLEAN DEFAULT FALSE;")
                 )
+                await conn.execute(
+                    sa.text("ALTER TABLE products ADD COLUMN IF NOT EXISTS price_tiers JSONB DEFAULT '[]'::jsonb;")
+                )
                 # ── НАМПАК: новые поля заказов (B2B и личный кабинет) ────────────
                 await conn.execute(
                     sa.text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;")

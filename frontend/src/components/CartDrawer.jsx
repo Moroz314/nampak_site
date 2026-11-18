@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -77,118 +77,153 @@ function CartItem({ item }) {
     maximumFractionDigits: 2,
   }) + ' ₽'
 
-  return (
-    <li className="flex gap-3 py-4 border-b border-slate-100 last:border-0">
-      
-      {/* Миниатюра */}
-      <div className="flex-shrink-0 w-16 h-16 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center relative">
-        {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-slate-400 font-bold text-xs">
-            {item.name ? item.name.slice(0, 2).toUpperCase() : 'УП'}
-          </span>
-        )}
-      </div>
+  // Определение следующего более выгодного оптового уровня цены
+  const nextTier = useMemo(() => {
+    if (!item.price_tiers || !Array.isArray(item.price_tiers) || item.price_tiers.length === 0) return null
+    const sorted = [...item.price_tiers]
+      .filter(t => t && t.min_qty != null && t.price != null && !isNaN(Number(t.min_qty)) && !isNaN(Number(t.price)))
+      .map(t => ({ min_qty: Number(t.min_qty), price: Number(t.price) }))
+      .sort((a, b) => a.min_qty - b.min_qty)
 
-      {/* Описание позиции */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between">
-        <div>
-          <h4 className="font-heading font-semibold text-sm text-[#162330] leading-snug line-clamp-2">
-            {item.name}
-          </h4>
-          
-          {/* Спецификация упаковки */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-500">
-            {item.dimensions_mm && (
-              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-medium">
-                {item.dimensions_mm}
-              </span>
-            )}
-            {item.material_specs && (
-              <span className="bg-[#FAF5EF] text-[#926435] px-1.5 py-0.5 rounded border border-[#E8D8C5]">
-                {item.material_specs}
-              </span>
-            )}
-            {item.min_order_qty && item.min_order_qty > 1 && (
-              <span className="text-slate-400">
-                от {item.min_order_qty.toLocaleString('ru-RU')} шт.
+    return sorted.find(t => t.min_qty > item.quantity && t.price < Number(item.price))
+  }, [item.price_tiers, item.quantity, item.price])
+
+  const neededForNextTier = nextTier ? nextTier.min_qty - item.quantity : 0
+
+  return (
+    <li className="py-4 border-b border-slate-100 last:border-0">
+      <div className="flex gap-3">
+        {/* Миниатюра */}
+        <div className="flex-shrink-0 w-16 h-16 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+          {item.image_url ? (
+            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-slate-400 font-bold text-xs">
+              {item.name ? item.name.slice(0, 2).toUpperCase() : 'УП'}
+            </span>
+          )}
+        </div>
+
+        {/* Описание позиции */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            <h4 className="font-heading font-semibold text-sm text-[#162330] leading-snug line-clamp-2">
+              {item.name}
+            </h4>
+            
+            {/* Спецификация упаковки */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-500">
+              {item.dimensions_mm && (
+                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-medium">
+                  {item.dimensions_mm}
+                </span>
+              )}
+              {item.material_specs && (
+                <span className="bg-[#FAF5EF] text-[#926435] px-1.5 py-0.5 rounded border border-[#E8D8C5]">
+                  {item.material_specs}
+                </span>
+              )}
+              {item.min_order_qty && item.min_order_qty > 1 && (
+                <span className="text-slate-400">
+                  от {item.min_order_qty.toLocaleString('ru-RU')} шт.
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Цена за штуку */}
+          <div className="text-xs text-slate-500 mt-1">
+            {priceFormatted} <span className="text-slate-400">/ шт.</span>
+            {item.price_tiers && item.price_tiers.length > 0 && (
+              <span className="ml-1.5 text-[10px] text-[#926435] font-semibold">
+                (оптовая цена)
               </span>
             )}
           </div>
         </div>
 
-        {/* Цена за штуку */}
-        <div className="text-xs text-slate-500 mt-1">
-          {priceFormatted} <span className="text-slate-400">/ шт.</span>
+        {/* Правая колонка: сумма + изменение количества */}
+        <div className="flex flex-col items-end justify-between flex-shrink-0">
+          <span className="font-heading font-bold text-sm text-[#162330]">
+            {subtotalFormatted}
+          </span>
+
+          <div className="flex items-center gap-1.5 mt-2">
+            {/* Кнопка минус */}
+            <button
+              type="button"
+              onClick={() => handleStep(-1)}
+              disabled={loading || item.quantity <= 1}
+              className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200
+                         text-slate-600 hover:border-[#C59B6D] hover:text-[#C59B6D]
+                         transition-colors disabled:opacity-40 text-sm font-bold cursor-pointer"
+              aria-label="Уменьшить количество"
+            >
+              −
+            </button>
+
+            {/* Инпут количества для быстрого ввода оптовых партий */}
+            <input
+              type="number"
+              min="1"
+              max="10000000"
+              value={qtyInput}
+              onChange={(e) => setQtyInput(e.target.value)}
+              onBlur={(e) => commitQty(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.target.blur()
+                }
+              }}
+              disabled={loading}
+              className="w-14 h-7 text-center font-heading font-semibold text-xs text-[#162330]
+                         border border-slate-200 rounded-md bg-white focus:border-[#C59B6D] focus:ring-1 focus:ring-[#C59B6D] outline-none"
+              aria-label="Количество"
+            />
+
+            {/* Кнопка плюс */}
+            <button
+              type="button"
+              onClick={() => handleStep(+1)}
+              disabled={loading}
+              className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200
+                         text-slate-600 hover:border-[#C59B6D] hover:text-[#C59B6D]
+                         transition-colors disabled:opacity-40 text-sm font-bold cursor-pointer"
+              aria-label="Увеличить количество"
+            >
+              +
+            </button>
+
+            {/* Кнопка удалить */}
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={loading}
+              className="ml-1 w-7 h-7 flex items-center justify-center rounded-md text-slate-400
+                         hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 cursor-pointer"
+              aria-label={`Удалить ${item.name} из корзины`}
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Правая колонка: сумма + изменение количества */}
-      <div className="flex flex-col items-end justify-between flex-shrink-0">
-        <span className="font-heading font-bold text-sm text-[#162330]">
-          {subtotalFormatted}
-        </span>
-
-        <div className="flex items-center gap-1.5 mt-2">
-          {/* Кнопка минус */}
+      {/* Подсказка о следующем более выгодном оптовом уровне */}
+      {nextTier && (
+        <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px] bg-[#FAF5EF] text-[#926435] px-3 py-2 rounded-xl border border-[#E8D8C5]">
+          <span className="leading-tight">
+            Добавьте ещё <strong>{neededForNextTier.toLocaleString('ru-RU')} шт.</strong>, и цена снизится до <strong>{nextTier.price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽/шт.</strong>
+          </span>
           <button
             type="button"
-            onClick={() => handleStep(-1)}
-            disabled={loading || item.quantity <= 1}
-            className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200
-                       text-slate-600 hover:border-[#C59B6D] hover:text-[#C59B6D]
-                       transition-colors disabled:opacity-40 text-sm font-bold cursor-pointer"
-            aria-label="Уменьшить количество"
+            onClick={() => commitQty(nextTier.min_qty)}
+            className="px-2.5 py-1 bg-[#162330] hover:bg-[#1E2F40] text-[#E8D8C5] hover:text-white font-bold rounded-lg text-[10px] shrink-0 transition-colors cursor-pointer"
           >
-            −
-          </button>
-
-          {/* Инпут количества для быстрого ввода оптовых партий */}
-          <input
-            type="number"
-            min="1"
-            max="10000000"
-            value={qtyInput}
-            onChange={(e) => setQtyInput(e.target.value)}
-            onBlur={(e) => commitQty(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.target.blur()
-              }
-            }}
-            disabled={loading}
-            className="w-14 h-7 text-center font-heading font-semibold text-xs text-[#162330]
-                       border border-slate-200 rounded-md bg-white focus:border-[#C59B6D] focus:ring-1 focus:ring-[#C59B6D] outline-none"
-            aria-label="Количество"
-          />
-
-          {/* Кнопка плюс */}
-          <button
-            type="button"
-            onClick={() => handleStep(+1)}
-            disabled={loading}
-            className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200
-                       text-slate-600 hover:border-[#C59B6D] hover:text-[#C59B6D]
-                       transition-colors disabled:opacity-40 text-sm font-bold cursor-pointer"
-            aria-label="Увеличить количество"
-          >
-            +
-          </button>
-
-          {/* Кнопка удалить */}
-          <button
-            type="button"
-            onClick={handleRemove}
-            disabled={loading}
-            className="ml-1 w-7 h-7 flex items-center justify-center rounded-md text-slate-400
-                       hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 cursor-pointer"
-            aria-label={`Удалить ${item.name} из корзины`}
-          >
-            <TrashIcon />
+            Взять {nextTier.min_qty.toLocaleString('ru-RU')} шт.
           </button>
         </div>
-      </div>
+      )}
     </li>
   )
 }

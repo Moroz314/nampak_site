@@ -65,6 +65,22 @@ async def reorder_products(
     return {"status": "ok", "updated": updated_count}
 
 
+def _normalize_price_tiers(tiers: list | None) -> list[dict]:
+    if not tiers:
+        return []
+    cleaned: list[dict] = []
+    for t in tiers:
+        if isinstance(t, dict):
+            min_q = int(t.get("min_qty", 1))
+            raw_p = t.get("price", 0)
+            p = float(raw_p) if raw_p is not None else 0.0
+            cleaned.append({"min_qty": max(1, min_q), "price": round(p, 2)})
+        elif hasattr(t, "min_qty") and hasattr(t, "price"):
+            cleaned.append({"min_qty": max(1, int(t.min_qty)), "price": round(float(t.price), 2)})
+    cleaned.sort(key=lambda x: x["min_qty"])
+    return cleaned
+
+
 @router.post(
     "/",
     response_model=ProductRead,
@@ -82,6 +98,10 @@ async def create_product(
 
     data = body.model_dump()
     image_urls = data.pop("images", None) or ([data["image_url"]] if data.get("image_url") else [])
+    if "price_tiers" in data:
+        data["price_tiers"] = _normalize_price_tiers(data["price_tiers"])
+        if data["price_tiers"] and (not data.get("price") or data["price"] == 0):
+            data["price"] = Decimal(str(data["price_tiers"][0]["price"]))
 
     # Новый товар получает sort_order = max(текущих в категории) + 1, чтобы попадал в конец списка
     if not data.get("sort_order"):
@@ -128,6 +148,10 @@ async def update_product(
         raise HTTPException(status_code=404, detail="Товар не найден")
 
     data = body.model_dump(exclude_unset=True)
+    if "price_tiers" in data:
+        data["price_tiers"] = _normalize_price_tiers(data["price_tiers"])
+        if data["price_tiers"] and (not data.get("price") or data.get("price") == 0) and not product.price:
+            data["price"] = Decimal(str(data["price_tiers"][0]["price"]))
     image_urls = data.pop("images", None)
     if "slug" in data:
         clash = await db.execute(

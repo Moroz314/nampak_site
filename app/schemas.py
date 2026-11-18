@@ -38,6 +38,11 @@ class CategoryReorderRequest(BaseModel):
 
 # ── Product ───────────────────────────────────────────────────────────────────
 
+class PriceTier(BaseModel):
+    min_qty: int     = Field(..., ge=1, description="Минимальное количество для уровня цены")
+    price:   Decimal = Field(..., ge=0, decimal_places=2, description="Цена за единицу при этом тираже")
+
+
 class ProductBase(BaseModel):
     name:        str         = Field(..., min_length=1, max_length=256)
     slug:        str         = Field(..., min_length=1, max_length=256, pattern=r"^[a-z0-9-]+$")
@@ -55,6 +60,7 @@ class ProductBase(BaseModel):
     dimensions_mm:    str | None = Field(default=None, max_length=256, description="Размеры в мм, напр. '220×165×100'")
     material_specs:   str | None = Field(default=None, max_length=256, description="Марка/толщина/тип материала")
     is_custom_design: bool       = Field(default=False, description="Возможность нанесения логотипа или изготовления по заказу")
+    price_tiers:      list[PriceTier] = Field(default_factory=list, description="Градация оптовых цен от тиража")
     category_id: int | None  = Field(default=None)
 
 class ProductCreate(ProductBase):
@@ -76,6 +82,7 @@ class ProductUpdate(BaseModel):
     dimensions_mm:    str | None  = None
     material_specs:   str | None  = None
     is_custom_design: bool | None = None
+    price_tiers:      list[PriceTier] | None = None
     category_id: int | None     = Field(default=None)
     images: list[str] | None = None
 
@@ -195,6 +202,7 @@ class CartItemRead(BaseModel):
     min_order_qty:  int = 1
     dimensions_mm:  str | None = None
     material_specs: str | None = None
+    price_tiers:    list[PriceTier] = Field(default_factory=list, description="Градация оптовых цен")
 
 class CartRead(BaseModel):
     session_id: str

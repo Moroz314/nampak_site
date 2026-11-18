@@ -66,6 +66,12 @@ PRODUCTS = [
         "material_specs": "Т-23 ТИП Д",
         "in_stock": True,
         "is_custom_design": False,
+        "price_tiers": [
+            {"min_qty": 1, "price": 10.50},
+            {"min_qty": 500, "price": 9.80},
+            {"min_qty": 2000, "price": 8.90},
+            {"min_qty": 10000, "price": 7.60},
+        ],
         "description": "<p>Самосборный короб типа «самолёт» из бурого трёхслойного гофрокартона марки <strong>Т-23 ТИП Д</strong>. Оптимален для фасовки товаров на маркетплейсах (Wildberries, Ozon, Яндекс Маркет), почтовых и курьерских отправлений. Быстро и легко собирается по линиям биговки без применения скотча.</p>",
     },
     {
@@ -258,12 +264,17 @@ PRODUCTS = [
         "category_slug": "upakovochnyj-skotch",
         "name": "Скотч прозрачный 48 мм × 50/66/72 м (38–47 мкм)",
         "slug": "skotch-prozrachnyj-48-mm",
-        "price": Decimal("40.40"),
+        "price": Decimal("496.65"),
         "min_order_qty": 1,
-        "dimensions_mm": "48 мм × 50/66/72 м",
-        "material_specs": "38, 40, 43, 45, 47 мкм",
+        "dimensions_mm": "48 мм × 66 м (коробка)",
+        "material_specs": "45 мкм, сверхпрочный",
         "in_stock": True,
         "is_custom_design": False,
+        "price_tiers": [
+            {"min_qty": 1, "price": 496.65},
+            {"min_qty": 20, "price": 462.00},
+            {"min_qty": 70, "price": 430.50},
+        ],
         "description": "<p>Качественная клейкая упаковочная лента шириной 48 мм на полипропиленовой основе (BOPP) с акриловым клеевым слоем. Плотность от 38 до 47 мкм обеспечивает надёжное запечатывание гофротары даже при низких температурах.</p>",
     },
     {
@@ -403,6 +414,7 @@ async def seed():
                 dimensions_mm=p["dimensions_mm"],
                 material_specs=p["material_specs"],
                 is_custom_design=p["is_custom_design"],
+                price_tiers=p.get("price_tiers", []),
             )
             session.add(product)
             stock_tag = "В наличии" if p["in_stock"] else "Под заказ"

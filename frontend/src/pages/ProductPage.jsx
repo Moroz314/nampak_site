@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../api/axios'
@@ -80,10 +80,41 @@ export default function ProductPage() {
   const minQty = product?.min_order_qty || 1
   const numPrice = Number(product?.price || 0)
 
+  // Сортировка ценовых порогов (оптовые уровни)
+  const sortedTiers = useMemo(() => {
+    if (!product?.price_tiers || !Array.isArray(product.price_tiers)) return []
+    return [...product.price_tiers]
+      .filter(t => t && t.min_qty != null && t.price != null && !isNaN(Number(t.min_qty)) && !isNaN(Number(t.price)))
+      .map(t => ({ min_qty: Number(t.min_qty), price: Number(t.price) }))
+      .sort((a, b) => a.min_qty - b.min_qty)
+  }, [product?.price_tiers])
+
+  // Индекс активного ценового уровня для текущего тиража
+  const activeTierIndex = useMemo(() => {
+    if (sortedTiers.length === 0) return -1
+    let idx = 0
+    for (let i = 0; i < sortedTiers.length; i++) {
+      if (quantity >= sortedTiers[i].min_qty) {
+        idx = i
+      } else {
+        break
+      }
+    }
+    return idx
+  }, [sortedTiers, quantity])
+
+  // Актуальная цена за 1 шт. с учётом выбранного тиража
+  const currentUnitPrice = useMemo(() => {
+    if (sortedTiers.length > 0 && activeTierIndex >= 0) {
+      return sortedTiers[activeTierIndex].price
+    }
+    return numPrice
+  }, [sortedTiers, activeTierIndex, numPrice])
+
   // Расчет общей стоимости выбранного тиража
-  const calculatedTotal = numPrice * quantity
-  const priceFormatted = numPrice.toLocaleString('ru-RU', {
-    minimumFractionDigits: numPrice % 1 === 0 ? 0 : 2,
+  const calculatedTotal = currentUnitPrice * quantity
+  const priceFormatted = currentUnitPrice.toLocaleString('ru-RU', {
+    minimumFractionDigits: currentUnitPrice % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   }) + ' ₽'
 
@@ -238,7 +269,9 @@ export default function ProductPage() {
             {/* Цена за 1 шт. */}
             <div className="p-4 bg-white rounded-2xl border border-slate-200 flex items-baseline justify-between shadow-xs">
               <div>
-                <span className="text-xs text-slate-500 font-medium block">Базовая цена за 1 шт.:</span>
+                <span className="text-xs text-slate-500 font-medium block">
+                  {sortedTiers.length >= 2 ? `Цена за 1 шт. (при заказе ${quantity.toLocaleString('ru-RU')} шт.):` : 'Базовая цена за 1 шт.:'}
+                </span>
                 <span className="font-heading font-black text-3xl text-[#162330]">
                   {priceFormatted}
                 </span>
@@ -249,6 +282,51 @@ export default function ProductPage() {
                 </span>
               )}
             </div>
+
+            {/* Градация оптовых цен от объёма (как на референсе) */}
+            {sortedTiers.length >= 2 && (
+              <div className="bg-[#FAF5EF] rounded-2xl border-2 border-[#E8D8C5] p-4 sm:p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#926435]">
+                    Оптовые цены от объёма заказа
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Нажмите на строку для выбора
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  {sortedTiers.map((tier, idx) => {
+                    const isActive = idx === activeTierIndex
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setQuantity(tier.min_qty)}
+                        className={`w-full flex items-baseline justify-between px-3.5 py-2.5 rounded-xl transition-all text-xs sm:text-sm cursor-pointer ${
+                          isActive
+                            ? 'bg-[#162330] text-white font-bold shadow-xs ring-2 ring-[#C59B6D]/50'
+                            : 'bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200/60'
+                        }`}
+                      >
+                        <span className={`shrink-0 ${isActive ? 'text-[#C59B6D]' : 'text-slate-600'}`}>
+                          от {tier.min_qty.toLocaleString('ru-RU')} шт.
+                        </span>
+                        <span
+                          className={`flex-1 border-b border-dotted mx-2 sm:mx-3 mb-1 transition-colors ${
+                            isActive ? 'border-[#C59B6D]/70' : 'border-slate-300'
+                          }`}
+                        />
+                        <span className={`shrink-0 font-heading ${isActive ? 'text-white font-extrabold text-sm sm:text-base' : 'text-[#162330] font-bold'}`}>
+                          {tier.price.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
+                          <span className={`text-[10px] ml-1 font-normal ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>/ шт.</span>
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Таблица характеристик упаковки */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
@@ -318,9 +396,16 @@ export default function ProductPage() {
 
               {/* Расчёт суммы за тираж */}
               <div className="pt-3 border-t border-slate-100 flex items-baseline justify-between">
-                <span className="text-xs text-slate-500 font-medium">
-                  Сумма за партию ({quantity.toLocaleString('ru-RU')} шт.):
-                </span>
+                <div>
+                  <span className="text-xs text-slate-500 font-medium block">
+                    Сумма за партию ({quantity.toLocaleString('ru-RU')} шт.):
+                  </span>
+                  {sortedTiers.length >= 2 && (
+                    <span className="text-[11px] text-[#926435] font-semibold">
+                      по {priceFormatted} / шт.
+                    </span>
+                  )}
+                </div>
                 <span className="font-heading font-black text-xl sm:text-2xl text-[#162330]">
                   {calculatedTotalFormatted}
                 </span>
