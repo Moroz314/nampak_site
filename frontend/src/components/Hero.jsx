@@ -15,12 +15,14 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-transparent to-transparent pointer-events-none sm:hidden" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="max-w-2xl bg-white/75 backdrop-blur-md p-6 sm:p-9 rounded-2xl sm:rounded-3xl border border-white/80 shadow-lg">
+        <div className="max-w-2xl bg-white/75 backdrop-blur-md p-5 sm:p-9 rounded-2xl sm:rounded-3xl border border-white/80 shadow-lg">
 
           {/* Верхний бейдж */}
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-[#162330]/5 border border-[#162330]/10 text-[11px] sm:text-xs font-heading font-semibold text-[#8C5D30] mb-3 sm:mb-4">
-            <span>📦</span>
-            <span className="truncate">Производство и склад в СПб • Доставка по всей РФ</span>
+          <div className="inline-flex items-center max-w-full gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#162330]/5 border border-[#162330]/10 text-[10px] sm:text-xs font-heading font-semibold text-[#8C5D30] mb-3 sm:mb-4">
+            <span className="flex-shrink-0 text-xs sm:text-sm">📦</span>
+            <span className="leading-snug break-words">
+              Производство и склад в СПб <span className="opacity-60">•</span> Доставка по всей РФ
+            </span>
           </div>
 
           {/* Главный заголовок */}
