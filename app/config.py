@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     secret_key: str = "change-me-in-production"
     allowed_origins: str = ""
-    site_base_url: str = "http://136.234.4.160"
+    site_base_url: str = "https://nampack.ru"
 
     # YooKassa acquiring (отключена — работаем через менеджера)
     yookassa_shop_id: str = ""

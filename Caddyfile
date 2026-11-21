@@ -1,9 +1,25 @@
-# НАМПАК — прием трафика по IP-адресу сервера (http://136.234.4.160) и любому хосту
-:80 {
+# НАМПАК — основной домен с автоматическим SSL-сертификатом (Let's Encrypt / ZeroSSL)
+nampack.ru, www.nampack.ru {
+    encode zstd gzip
+
+    # Заголовки безопасности
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    reverse_proxy frontend:80 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# Доступ по прямому IP-адресу сервера (191.44.48.131) и локальным хостам
+http://191.44.48.131, http://localhost {
     reverse_proxy frontend:80
 }
 
-# При подключении собственного домена (например, nampak.ru) раскомментируйте блок ниже для авто-HTTPS:
-# nampak.ru, www.nampak.ru {
-#     reverse_proxy frontend:80
-# }

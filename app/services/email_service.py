@@ -535,16 +535,16 @@ def send_cdek_dispatched_email(
     total_amount_formatted = _format_price(order_data.get("total_amount", 0))
 
     tracking_url = f"https://www.cdek.ru/ru/tracking?order_id={cdek_number}" if cdek_number else "https://www.cdek.ru/ru/tracking"
-    site_url = (settings.site_base_url or "http://139.100.224.102").rstrip("/")
+    site_url = (settings.site_base_url or "https://nampack.ru").rstrip("/")
     warranty_url = f"{site_url}/warranty"
 
     # Реквизиты продавца
-    legal_name = html.escape(requisites.get("contact_legal_name") or "ИП Морозов Владислав Сергеевич")
-    inn = html.escape(requisites.get("contact_inn") or "780534396013")
-    ogrnip = html.escape(requisites.get("contact_ogrnip") or "325784700428266")
-    phone1 = html.escape(requisites.get("contact_phone1") or "+79500082208")
-    phone2 = html.escape(requisites.get("contact_phone2") or "+79202091993")
-    email_contact = html.escape(requisites.get("contact_email") or "info@alduin-workshop.ru")
+    legal_name = html.escape(requisites.get("contact_legal_name") or "НАМПАК")
+    inn = html.escape(requisites.get("contact_inn") or "")
+    ogrnip = html.escape(requisites.get("contact_ogrnip") or "")
+    phone1 = html.escape(requisites.get("contact_phone1") or "+7 (993) 117-64-92")
+    phone2 = html.escape(requisites.get("contact_phone2") or "+7 (965) 032-61-18")
+    email_contact = html.escape(requisites.get("contact_email") or "nampack@yandex.ru")
 
     # Генерация QR-кода
     qr_bytes = _generate_qr_code_png(tracking_url)

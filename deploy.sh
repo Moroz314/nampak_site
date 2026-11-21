@@ -13,7 +13,7 @@ if [ ! -f .env ]; then
     Обязательно заполните перед первым запуском:
       SECRET_KEY        — случайная строка (openssl rand -hex 32)
       POSTGRES_PASSWORD — надёжный пароль БД
-      ALLOWED_ORIGINS   — https://alduin-workshop.ru
+      ALLOWED_ORIGINS   — https://nampack.ru
       DEBUG             — false
       YOOKASSA_*        — реквизиты магазина (если нужны платежи)
     Затем запустите скрипт снова.
@@ -46,7 +46,7 @@ cat <<'TIPS'
   Проверить TLS-сертификат (срок, CN, цепочка):
     docker compose exec caddy caddy certificates
     # или снаружи:
-    echo | openssl s_client -connect alduin-workshop.ru:443 -servername alduin-workshop.ru 2>/dev/null \
+    echo | openssl s_client -connect nampack.ru:443 -servername nampack.ru 2>/dev/null \
       | openssl x509 -noout -dates -subject -issuer
 
   Принудительно обновить сертификат Let's Encrypt:
