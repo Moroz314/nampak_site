@@ -1,5 +1,5 @@
 # НАМПАК — основной домен с автоматическим SSL-сертификатом (Let's Encrypt / ZeroSSL)
-nampack.ru, www.nampack.ru {
+nampack.ru {
     encode zstd gzip
 
     # Заголовки безопасности
@@ -22,4 +22,5 @@ nampack.ru, www.nampack.ru {
 http://191.44.48.131, http://localhost {
     reverse_proxy frontend:80
 }
+
 
